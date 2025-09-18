@@ -77,10 +77,13 @@
       </div>
 
       <div id="home-grid" class="card-grid"></div>
-      <div id="load-more" class="load-more-wrap"><button id="load-more-btn" class="btn">Load more</button></div>
+      <div id="load-more" class="load-more-wrap">
+        <button id="load-more-btn" class="btn">Load more</button>
+      </div>
     </section>
 
     <aside class="sidebar">
+      <!-- ads will be injected by app.js -->
       <div class="ad-slot"></div>
       <div class="ad-slot small"></div>
 
@@ -101,6 +104,7 @@
 
   <script src="js/app.js"></script>
   <script>
+    // Year + site name
     document.getElementById('year').textContent = new Date().getFullYear();
     document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
@@ -111,7 +115,7 @@
     const usernameDisplay = document.getElementById("username-display");
     const logoutBtn = document.getElementById("logout-btn");
 
-    if(loggedUser){
+    if (loggedUser) {
       loginLink.style.display = "none";
       userInfo.style.display = "inline";
       usernameDisplay.textContent = loggedUser;
@@ -125,6 +129,19 @@
       localStorage.removeItem("nb_logged_in_user");
       location.reload();
     });
+
+    // Load-more button (fetches more from localStorage)
+    let homeLimit = 8;
+    const btn = document.getElementById("load-more-btn");
+    if(btn){
+      btn.addEventListener("click", ()=>{
+        homeLimit += 8;
+        const grid = document.getElementById("home-grid");
+        if(window.renderHomeGrid){
+          window.renderHomeGrid(homeLimit);
+        }
+      });
+    }
   </script>
 </body>
 </html>
