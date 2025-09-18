@@ -3,14 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sell — <span id="title-site"></span></title>
+  <title>Sell — Nepali Bazar</title>
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Main CSS -->
   <link rel="stylesheet" href="css/styles.css">
+
   <script src="js/config.js"></script>
   <script src="js/product-data.js"></script>
 </head>
 <body class="dark-bg">
 
+  <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="brand">
@@ -33,6 +39,7 @@
     </div>
   </header>
 
+  <!-- Main -->
   <main class="container sell-wrap">
     <section class="sell-card">
       <h2>Create a listing</h2>
@@ -55,23 +62,23 @@
         </label>
 
         <label>Price (Rs)
-          <input name="price" type="number" required class="input" placeholder="e.g. 85000" />
+          <input name="price" id="price-input" type="number" required class="input" placeholder="e.g. 85000" />
         </label>
 
         <label>Province
-          <select name="province" id="province" class="select">
+          <select name="province" id="province" class="select" required>
             <option value="">Select Province</option>
           </select>
         </label>
 
         <label>City
-          <select name="city" id="city" class="select">
+          <select name="city" id="city" class="select" required>
             <option value="">Select City</option>
           </select>
         </label>
 
         <label>Contact (Phone or Email)
-          <input name="contact" required class="input" placeholder="e.g. 98XXXXXXXX (10 digits) or email@example.com" />
+          <input name="contact" id="contact-input" required class="input" placeholder="98XXXXXXXX (10 digits) or email@example.com" />
         </label>
 
         <label>Description
@@ -94,6 +101,7 @@
     </section>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>© <span id="year"></span> <span class="site-name"></span></div>
@@ -101,18 +109,19 @@
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="js/app.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function(){
-      // Check login
+      // --- Login check ---
       const loggedUser = localStorage.getItem("nb_logged_in_user");
       if(!loggedUser){
-        alert("You must log in as 'sohaum' to post a listing!");
+        alert("You must log in to post a listing!");
         window.location.href = "login.html";
         return;
       }
 
-      // Update nav links
+      // Navbar user info
       const loginLink = document.getElementById("login-link");
       const userInfo = document.getElementById("user-info");
       const usernameDisplay = document.getElementById("username-display");
@@ -128,7 +137,65 @@
         window.location.href = "login.html";
       });
 
-      // Update year and site name
+      // --- Province/City dropdown ---
+      const provinces = {
+        "Province 1": ["Biratnagar","Dharan","Itahari"],
+        "Madhesh": ["Janakpur","Birgunj","Lahan"],
+        "Bagmati": ["Kathmandu","Lalitpur","Bhaktapur","Hetauda"],
+        "Gandaki": ["Pokhara","Gorkha","Baglung"],
+        "Lumbini": ["Butwal","Bhairahawa","Nepalgunj"],
+        "Karnali": ["Surkhet","Jumla","Dailekh"],
+        "Sudurpashchim": ["Dhangadhi","Mahendranagar","Tikapur"]
+      };
+
+      const provinceSelect = document.getElementById("province");
+      const citySelect = document.getElementById("city");
+
+      Object.keys(provinces).forEach(p=>{
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        provinceSelect.appendChild(opt);
+      });
+
+      provinceSelect.addEventListener("change", function(){
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        (provinces[this.value]||[]).forEach(c=>{
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          citySelect.appendChild(opt);
+        });
+      });
+
+      // --- Price & contact validation ---
+      const form = document.getElementById("sell-form");
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        const price = parseFloat(document.getElementById("price-input").value);
+        const contact = document.getElementById("contact-input").value.trim();
+        const msg = document.getElementById("sell-msg");
+
+        if(price < 0 || price > 100000000){
+          msg.textContent = "❌ Price must be between 0 and 100,000,000 Rs.";
+          return;
+        }
+
+        if(/^\d{10}$/.test(contact) === false && !contact.includes("@")){
+          msg.textContent = "❌ Enter a valid 10-digit phone number or email.";
+          return;
+        }
+
+        if(price === 0){
+          msg.textContent = "✅ Listing marked as FREE!";
+        } else {
+          msg.textContent = "✅ Listing submitted!";
+        }
+
+        // TODO: Save listing to products (same as app.js handles)
+      });
+
+      // Footer year + site name
       document.getElementById('year').textContent = new Date().getFullYear();
       document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
     });
