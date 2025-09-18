@@ -24,7 +24,10 @@
         <input id="global-search-top" placeholder="Search items, e.g., bike, phone" class="search-input" />
         <a href="index.html" class="nav-link">Home</a>
         <a href="sell.html" class="nav-link cta">Sell</a>
-        <a href="login.html" class="nav-link">Login</a>
+        <a href="login.html" id="login-link" class="nav-link">Login</a>
+        <span id="user-info" class="nav-link" style="display:none;">
+          <span id="username-display"></span> | <a href="#" id="logout-btn">Logout</a>
+        </span>
       </nav>
     </div>
   </header>
@@ -82,6 +85,28 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
     document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
+
+    // Logged-in state
+    const loggedUser = localStorage.getItem("nb_logged_in_user");
+    const loginLink = document.getElementById("login-link");
+    const userInfo = document.getElementById("user-info");
+    const usernameDisplay = document.getElementById("username-display");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    if(loggedUser){
+      loginLink.style.display = "none";
+      userInfo.style.display = "inline";
+      usernameDisplay.textContent = loggedUser;
+    } else {
+      loginLink.style.display = "inline";
+      userInfo.style.display = "none";
+    }
+
+    logoutBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      localStorage.removeItem("nb_logged_in_user");
+      location.reload();
+    });
   </script>
 </body>
 </html>
