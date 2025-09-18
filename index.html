@@ -1,0 +1,67 @@
+                      <!doctype html>
+                      <html lang="en">
+                      <head>
+                        <meta charset="utf-8" />
+                        <meta name="viewport" content="width=device-width,initial-scale=1" />
+                        <title>NEPALI BAZAR — Home</title>
+                        <link rel="stylesheet" href="css/styles.css" />
+                        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+                        <meta name="description" content="Nepali Bazar - local marketplace for students, workers and everyone." />
+                      </head>
+                      <body>
+                        <div id="app-root">
+                          <!-- Header will be injected by app.js -->
+                          <header id="site-header" class="site-header container"></header>
+
+                          <main class="container main-content">
+                            <section class="hero">
+                              <div class="hero-left">
+                                <h1 id="hero-title">Buy & Sell in your city — fast & local</h1>
+                                <p class="muted">A beautiful marketplace for students, workers & everyone. Buy second-hand, sell your stuff, or find local services.</p>
+                                <div class="hero-actions">
+                                  <a class="btn btn-primary" href="products.html">Browse Products</a>
+                                  <a class="btn" href="sell.html">Sell an Item</a>
+                                </div>
+                              </div>
+                              <div class="hero-right">
+                                <img src="assets/images/hero-placeholder.jpg" alt="Marketplace" class="hero-image" />
+                              </div>
+                            </section>
+
+                            <section class="section">
+                              <div class="section-head">
+                                <h2>Popular near you</h2>
+                                <div class="section-actions">
+                                  <input id="search-home" class="input search" placeholder="Search items (e.g., phone, bicycle, books)" />
+                                </div>
+                              </div>
+
+                              <div id="home-products" class="product-grid" aria-live="polite"></div>
+                              <div class="center"><a href="products.html" class="link">See all products</a></div>
+                            </section>
+
+                            <section class="section features">
+                              <div class="feature-card">
+                                <svg class="icon"><use href="assets/icons.svg#shield"/></svg>
+                                <h3>Safe & Local</h3>
+                                <p class="muted">Meet locally and pay securely.</p>
+                              </div>
+                              <div class="feature-card">
+                                <svg class="icon"><use href="assets/icons.svg#price-tag"/></svg>
+                                <h3>Best Prices</h3>
+                                <p class="muted">Second-hand treasures at great prices.</p>
+                              </div>
+                              <div class="feature-card">
+                                <svg class="icon"><use href="assets/icons.svg#bolt"/></svg>
+                                <h3>Fast Listing</h3>
+                                <p class="muted">Create listings in under a minute.</p>
+                              </div>
+                            </section>
+                          </main>
+
+                          <footer class="site-footer container" id="site-footer"></footer>
+                        </div>
+
+                        <script type="module" src="js/app.js"></script>
+                      </body>
+                      </html>
