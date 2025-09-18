@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Products — <span id="title-site"></span></title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/config.js"></script>
+  <script src="js/product-data.js"></script>
+</head>
+<body class="dark-bg">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <div class="logo">NB</div>
+        <div class="brand-text">
+          <div class="brand-title"><span class="site-name"></span></div>
+          <div class="brand-sub">Local Marketplace — Game Mode</div>
+        </div>
+      </a>
+
+      <nav class="nav">
+        <input id="global-search-top" placeholder="Search items, e.g., bike, phone" class="search-input" />
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="sell.html" class="nav-link cta">Sell</a>
+        <a href="login.html" id="login-link" class="nav-link">Login</a>
+        <span id="user-info" class="nav-link" style="display:none;">
+          <span id="username-display"></span> | <a href="#" id="logout-btn">Logout</a>
+        </span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container main-grid products-page">
+    <section class="content wide">
+      <div class="section-head">
+        <h2>All Listings</h2>
+        <div class="controls">
+          <input id="search-products" class="input" placeholder="Search by title, location, or seller" />
+          <select id="category-filter" class="select"></select>
+          <select id="sort-products" class="select">
+            <option value="new">Newest</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div id="products-grid" class="card-grid products-grid"></div>
+      </div>
+
+      <div id="products-pagination" class="pagination"></div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="ad-slot tall">
+        <img src="assets/images/ad1.jpg" alt="ad" onerror="this.style.display='none'"/>
+      </div>
+      <div class="sidebar-card">
+        <h3>Why list here?</h3>
+        <ul class="muted small">
+          <li>Mobile friendly</li>
+          <li>Fast listing</li>
+          <li>Local reach</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© <span id="year"></span> <span class="site-name"></span></div>
+      <div class="muted">Contact: <a href="mailto:help@nepalibazar.test">help@nepalibazar.test</a></div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+<script>
+  // Use the correct global array
+let products = window.NB_PRODUCTS || [];
+
+// --- Render products with delete button for Sohaum only ---
+const productsGrid = document.getElementById("products-grid");
+
+function renderProducts() {
+  productsGrid.innerHTML = ""; // Clear current grid
+  products.forEach(product => {
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    card.innerHTML = `
+      <img src="${product.images?.[0] || 'assets/images/placeholder.jpg'}" alt="product image">
+      <h3>${product.title}</h3>
+      <p>Price: ${product.price === 0 ? 'FREE' : 'Rs. ' + product.price}</p>
+      <p>Seller: ${product.seller}</p>
+      <p>Location: ${product.location}</p>
+      <p>${product.description}</p>
+      <div class="card-actions">
+        <button class="view-btn" data-id="${product.id}">View</button>
+        <button class="contact-btn" data-id="${product.id}">Contact</button>
+        ${loggedUser === "sohaum" ? '<button class="delete-btn" data-id=\"' + product.id + '\">Delete</button>' : ''}
+      </div>
+    `;
+
+    if(loggedUser === "sohaum") {
+      const btn = card.querySelector(".delete-btn");
+      if(btn) {
+        btn.addEventListener("click", () => {
+          if(confirm("Are you sure you want to delete this listing?")) {
+            products = products.filter(p => p.id !== product.id);
+            window.NB_PRODUCTS = products; // update global
+            localStorage.setItem("nb_products_v1", JSON.stringify(products)); // persist
+            renderProducts();
+          }
+        });
+      }
+    }
+
+    productsGrid.appendChild(card);
+  });
+}
+
+renderProducts();
+  // Set year and site name
+  document.getElementById('year').textContent = new Date().getFullYear();
+  document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
+
+  // Logged-in state
+  const loggedUser = localStorage.getItem("nb_logged_in_user");
+  const loginLink = document.getElementById("login-link");
+  const userInfo = document.getElementById("user-info");
+  const usernameDisplay = document.getElementById("username-display");
+  const logoutBtn = document.getElementById("logout-btn");
+
+  if(loggedUser){
+    loginLink.style.display = "none";
+    userInfo.style.display = "inline";
+    usernameDisplay.textContent = loggedUser;
+  } else {
+    loginLink.style.display = "inline";
+    userInfo.style.display = "none";
+  }
+
+  logoutBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    localStorage.removeItem("nb_logged_in_user");
+    location.reload();
+  });
+
+  // --- Render products with delete button for Sohaum only ---
+  const productsGrid = document.getElementById("products-grid");
+  let products = window.NB_PRODUCTS || [];
+
+  // Save products to localStorage
+  function saveProducts() {
+    window.NB_PRODUCTS = products;
+    try {
+      localStorage.setItem(window.LOCAL_STORAGE_KEY || "nb_products_v1", JSON.stringify(products));
+    } catch(e) {
+      console.warn("Failed saving products", e);
+    }
+  }
+
+  function renderProducts() {
+    productsGrid.innerHTML = ""; // Clear current grid
+    products.forEach(product => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+
+      card.innerHTML = `
+        <img src="${product.images && product.images[0] ? product.images[0] : 'assets/images/placeholder.jpg'}" alt="product image">
+        <h3>${product.title}</h3>
+        <p>Price: Rs. ${product.price}</p>
+        <p>Seller: ${product.seller}</p>
+        <p>Location: ${product.location}</p>
+        <p>${product.description}</p>
+        ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}
+      `;
+
+      if(loggedUser === "sohaum") {
+        card.querySelector(".delete-btn").addEventListener("click", () => {
+          if(confirm("Are you sure you want to delete this listing?")){
+            products = products.filter(p => p.id !== product.id);
+            saveProducts();
+            renderProducts();
+          }
+        });
+      }
+
+      productsGrid.appendChild(card);
+    });
+  }
+
+  renderProducts();
+
+// --- Additional fixes: support q param prefill and modal for View/Contact, and delete handling ---
+(function(){
+  // create modal container
+  function ensureModal(){
+    if(document.getElementById('nb-modal')) return;
+    const m = document.createElement('div'); m.id='nb-modal'; m.className='nb-modal';
+    m.innerHTML = '<div class="nb-modal-content"><button class="nb-modal-close">X</button><div id="nb-modal-body"></div></div>';
+    document.body.appendChild(m);
+    m.querySelector('.nb-modal-close').addEventListener('click', ()=> m.style.display='none');
+  }
+  ensureModal();
+  // prefill from q param
+  const url = new URL(window.location.href);
+  const q = url.searchParams.get('q') || '';
+  if(q){
+    const sp = document.getElementById('search-products');
+    if(sp){ sp.value = q; }
+  }
+  // delegated events for buttons
+  const grid = document.getElementById('products-grid');
+  if(grid){
+    grid.addEventListener('click', function(e){
+      const v = e.target;
+      if(v.classList.contains('view-btn')){
+        const id = v.dataset.id;
+        const prod = (window.NB_PRODUCTS || []).find(p=>p.id===id);
+        if(!prod) return alert('Product not found');
+        const body = document.getElementById('nb-modal-body');
+        body.innerHTML = '<h2>'+ (prod.title) +'</h2><p><strong>Price:</strong> ' + (prod.price===0? 'FREE':'Rs. '+prod.price) + '</p><p><strong>Seller:</strong> '+prod.seller+'</p><p><strong>Contact:</strong> '+prod.contact+'</p><p>'+prod.description+'</p>';
+        document.getElementById('nb-modal').style.display='flex';
+      } else if(v.classList.contains('contact-btn')){
+        const id = v.dataset.id;
+        const prod = (window.NB_PRODUCTS || []).find(p=>p.id===id);
+        if(!prod) return alert('Product not found');
+        const body = document.getElementById('nb-modal-body');
+        body.innerHTML = '<h3>Contact Seller: '+prod.seller+'</h3><p>Phone: '+prod.contact+'</p><p>Email: '+(window.CONTACT_EMAIL||'')+'</p>';
+        document.getElementById('nb-modal').style.display='flex';
+      } else if(v.classList.contains('delete-btn')){
+        const id = v.dataset.id;
+        const logged = localStorage.getItem('nb_logged_in_user');
+        if(logged !== 'sohaum'){ alert('Only user \"sohaum\" can delete products.'); return; }
+        if(!confirm('Delete this product?')) return;
+        const list = JSON.parse(localStorage.getItem('nb_products_v1') || JSON.stringify(window.NB_PRODUCTS || []));
+        const idx = list.findIndex(p=>p.id===id);
+        if(idx>-1){ list.splice(idx,1); localStorage.setItem('nb_products_v1', JSON.stringify(list)); window.location.reload(); }
+      }
+    });
+  }
+})();
+
+  <script src="js/nb-fixes.js"></script>
+</body>
+</html>
