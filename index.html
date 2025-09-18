@@ -83,7 +83,6 @@
     </section>
 
     <aside class="sidebar">
-      <!-- ads will be injected by app.js -->
       <div class="ad-slot"></div>
       <div class="ad-slot small"></div>
 
@@ -102,14 +101,6 @@
       <div class="muted">Contact: <a href="mailto:help@nepalibazar.test">help@nepalibazar.test</a></div>
     </div>
   </footer>
-
-  <!-- Modal -->
-  <div id="nb-modal" class="nb-modal">
-    <div class="nb-modal-content">
-      <button class="nb-modal-close">✕</button>
-      <div id="nb-modal-body"></div>
-    </div>
-  </div>
 
   <!-- Scripts -->
   <script src="js/app.js"></script>
@@ -151,31 +142,6 @@
         }
       });
     }
-
-    // Populate category filter
-    const catSelect = document.getElementById("filter-category");
-    if (catSelect && window.NB_PRODUCTS) {
-      const categories = [...new Set(window.NB_PRODUCTS.map(p => p.category))];
-      catSelect.innerHTML = `<option value="">All Categories</option>` +
-        categories.map(c => `<option value="${c}">${c}</option>`).join("");
-    }
-
-    // Modal open/close logic
-    const modal = document.getElementById("nb-modal");
-    const modalBody = document.getElementById("nb-modal-body");
-    const modalClose = modal.querySelector(".nb-modal-close");
-
-    window.NB_OPEN_MODAL = (html) => {
-      modalBody.innerHTML = html;
-      modal.style.display = "flex";
-    };
-    function closeModal(){
-      modal.style.display = "none";
-      modalBody.innerHTML = "";
-    }
-    modalClose.addEventListener("click", closeModal);
-    modal.addEventListener("click", e => { if(e.target === modal) closeModal(); });
-    document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
   </script>
 </body>
 </html>
