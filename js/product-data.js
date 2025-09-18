@@ -64,6 +64,19 @@
     try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
   }
 
+  // refresh products from localStorage
+  function getProducts() {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        products = JSON.parse(raw);
+      }
+    } catch(e){
+      console.warn("Failed to reload products", e);
+    }
+    return products;
+  }
+
   // generate new unique ID
   function generateId() {
     return "p-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
@@ -73,4 +86,5 @@
   window.NB_PRODUCTS = products;
   window.NB_SAVE_PRODUCTS = saveProducts;
   window.NB_GENERATE_ID = generateId;
+  window.NB_GET_PRODUCTS = getProducts;
 })();
