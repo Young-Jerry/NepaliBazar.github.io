@@ -11,6 +11,18 @@
   <!-- Main CSS -->
   <link rel="stylesheet" href="css/styles.css">
 
+  <style>
+    /* Force white text for dark theme */
+    body, .card, .btn, .select, .muted, .title, .meta, .hero, .hero-sub, .sidebar, .site-footer {
+      color: #fff !important;
+    }
+    input, select, textarea {
+      background: #111;
+      color: #fff !important;
+      border: 1px solid #444;
+    }
+  </style>
+
   <script src="js/config.js"></script>
   <script src="js/product-data.js"></script>
 </head>
@@ -142,6 +154,12 @@
         }
       });
     }
+
+    // Filter dropdowns → refresh grid
+    const catSel = document.getElementById("filter-category");
+    const sortSel = document.getElementById("filter-sort");
+    if(catSel) catSel.addEventListener("change", ()=>{ if(window.renderProductsPage) window.renderProductsPage(); });
+    if(sortSel) sortSel.addEventListener("change", ()=>{ if(window.renderProductsPage) window.renderProductsPage(); });
   </script>
 </body>
 </html>
