@@ -11,10 +11,9 @@
 </head>
 <body class="dark-bg">
   <script>
-    // Check if user is logged in
-    const loggedInUser = localStorage.getItem("nb_logged_in_user");
-    if (!loggedInUser || loggedInUser !== "sohaum") {
-      alert("You must log in as 'sohaum' to post a listing!");
+    // Redirect to login if not logged in
+    const loggedUser = localStorage.getItem("nb_logged_in_user");
+    if(!loggedUser) {
       window.location.href = "login.html";
     }
   </script>
@@ -33,8 +32,10 @@
         <input id="global-search-sell" placeholder="Search items..." class="search-input" />
         <a href="index.html" class="nav-link">Home</a>
         <a href="products.html" class="nav-link">Products</a>
-        <a href="login.html" class="nav-link">Login</a>
-        <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        <a href="login.html" id="login-link" class="nav-link">Login</a>
+        <span id="user-info" class="nav-link" style="display:none;">
+          <span id="username-display"></span> | <a href="#" id="logout-btn">Logout</a>
+        </span>
       </nav>
     </div>
   </header>
@@ -104,11 +105,26 @@
     document.getElementById('year').textContent = new Date().getFullYear();
     document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
-    // Logout button functionality
-    document.getElementById('logout-btn').addEventListener('click', function(){
+    // Logged-in nav handling
+    const loginLink = document.getElementById("login-link");
+    const userInfo = document.getElementById("user-info");
+    const usernameDisplay = document.getElementById("username-display");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    if(loggedUser){
+      loginLink.style.display = "none";
+      userInfo.style.display = "inline";
+      usernameDisplay.textContent = loggedUser;
+    } else {
+      loginLink.style.display = "inline";
+      userInfo.style.display = "none";
+    }
+
+    // Logout functionality
+    logoutBtn.addEventListener("click", function(e){
+      e.preventDefault();
       localStorage.removeItem("nb_logged_in_user");
-      alert("Logged out successfully!");
-      window.location.href = "login.html";
+      location.href = "login.html";
     });
   </script>
 </body>
