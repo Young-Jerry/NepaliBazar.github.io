@@ -95,6 +95,7 @@
     </aside>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>© <span id="year"></span> <span class="site-name"></span>. Made with ❤️ in Nepal.</div>
@@ -102,6 +103,15 @@
     </div>
   </footer>
 
+  <!-- Modal -->
+  <div id="nb-modal" class="nb-modal">
+    <div class="nb-modal-content">
+      <button class="nb-modal-close">✕</button>
+      <div id="nb-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="js/app.js"></script>
   <script>
     // Year + site name
@@ -130,18 +140,42 @@
       location.reload();
     });
 
-    // Load-more button (fetches more from localStorage)
+    // Load-more button
     let homeLimit = 8;
     const btn = document.getElementById("load-more-btn");
     if(btn){
       btn.addEventListener("click", ()=>{
         homeLimit += 8;
-        const grid = document.getElementById("home-grid");
         if(window.renderHomeGrid){
           window.renderHomeGrid(homeLimit);
         }
       });
     }
+
+    // Populate category filter
+    const catSelect = document.getElementById("filter-category");
+    if (catSelect && window.NB_PRODUCTS) {
+      const categories = [...new Set(window.NB_PRODUCTS.map(p => p.category))];
+      catSelect.innerHTML = `<option value="">All Categories</option>` +
+        categories.map(c => `<option value="${c}">${c}</option>`).join("");
+    }
+
+    // Modal open/close logic
+    const modal = document.getElementById("nb-modal");
+    const modalBody = document.getElementById("nb-modal-body");
+    const modalClose = modal.querySelector(".nb-modal-close");
+
+    window.NB_OPEN_MODAL = (html) => {
+      modalBody.innerHTML = html;
+      modal.style.display = "flex";
+    };
+    function closeModal(){
+      modal.style.display = "none";
+      modalBody.innerHTML = "";
+    }
+    modalClose.addEventListener("click", closeModal);
+    modal.addEventListener("click", e => { if(e.target === modal) closeModal(); });
+    document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
   </script>
 </body>
 </html>
