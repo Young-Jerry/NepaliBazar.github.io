@@ -1,2 +1,0 @@
-# NepaliBazar.github.io
-Website
