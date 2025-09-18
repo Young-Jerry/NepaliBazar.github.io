@@ -3,13 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login — <span id="title-site"></span></title>
+  <title>Login — Nepali Bazar</title>
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Main CSS -->
   <link rel="stylesheet" href="css/styles.css">
+
   <script src="js/config.js"></script>
   <script src="js/product-data.js"></script>
 </head>
 <body class="dark-bg">
+
+  <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="brand">
@@ -28,6 +35,7 @@
     </div>
   </header>
 
+  <!-- Main -->
   <main class="container auth-wrap">
     <div class="auth-card">
       <h2>Login</h2>
@@ -46,6 +54,7 @@
     </div>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>© <span id="year"></span> <span class="site-name"></span></div>
@@ -53,25 +62,32 @@
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="js/app.js"></script>
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-    document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
+    document.addEventListener("DOMContentLoaded", function(){
+      // Footer info
+      document.getElementById('year').textContent = new Date().getFullYear();
+      document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
-    // Login functionality
-    const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', function(e){
-      e.preventDefault();
-      const username = this.username.value.trim();
-      const password = this.password.value.trim();
+      // Login
+      const loginForm = document.getElementById('login-form');
+      const loginMsg = document.getElementById('login-msg');
 
-      // Only allow user: sohaum / password: sohaum
-      if(username === "sohaum" && password === "sohaum"){
-        localStorage.setItem("nb_logged_in_user", username); // store login
-        window.location.href = "sell.html"; // redirect to Sell page
-      } else {
-        document.getElementById('login-msg').textContent = "Invalid username or password!";
-      }
+      loginForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const username = this.username.value.trim();
+        const password = this.password.value.trim();
+
+        // Only allow sohaum / sohaum
+        if(username === "sohaum" && password === "sohaum"){
+          localStorage.setItem("nb_logged_in_user", username);
+          loginMsg.textContent = "✅ Login successful! Redirecting...";
+          setTimeout(()=>{ window.location.href = "index.html"; }, 800);
+        } else {
+          loginMsg.textContent = "❌ Invalid username or password!";
+        }
+      });
     });
   </script>
 </body>
