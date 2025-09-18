@@ -1,4 +1,4 @@
-// Sample product data and localStorage bootstrap
+// Product data and localStorage bootstrap
 (function(){
   const initial = [
     {
@@ -42,22 +42,35 @@
     }
   ];
 
-  // load from localStorage or initialize
+  // localStorage key
   const key = window.LOCAL_STORAGE_KEY || "nb_products_v1";
-  let local = [];
+  let products = [];
+
   try {
     const raw = localStorage.getItem(key);
-    if (raw) local = JSON.parse(raw);
+    if (raw) products = JSON.parse(raw);
   } catch (e){
-    console.warn("failed reading local products", e);
+    console.warn("Failed reading local products", e);
   }
 
-  // if no local, use initial
-  if (!local || !Array.isArray(local) || local.length === 0) {
-    local = initial;
-    try { localStorage.setItem(key, JSON.stringify(local)); } catch(e){}
+  // if empty, initialize
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    products = initial;
+    try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
   }
 
-  // attach to global so app.js can read
-  window.NB_PRODUCTS = local;
+  // function to save current array to localStorage
+  function saveProducts() {
+    try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
+  }
+
+  // generate new unique ID
+  function generateId() {
+    return "p-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+  }
+
+  // global helpers
+  window.NB_PRODUCTS = products;
+  window.NB_SAVE_PRODUCTS = saveProducts;
+  window.NB_GENERATE_ID = generateId;
 })();
