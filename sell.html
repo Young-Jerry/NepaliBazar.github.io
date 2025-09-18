@@ -10,6 +10,15 @@
   <script src="js/product-data.js"></script>
 </head>
 <body class="dark-bg">
+  <script>
+    // Check if user is logged in
+    const loggedInUser = localStorage.getItem("nb_logged_in_user");
+    if (!loggedInUser || loggedInUser !== "sohaum") {
+      alert("You must log in as 'sohaum' to post a listing!");
+      window.location.href = "login.html";
+    }
+  </script>
+
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="brand">
@@ -25,6 +34,7 @@
         <a href="index.html" class="nav-link">Home</a>
         <a href="products.html" class="nav-link">Products</a>
         <a href="login.html" class="nav-link">Login</a>
+        <a href="#" id="logout-btn" class="nav-link">Logout</a>
       </nav>
     </div>
   </header>
@@ -93,6 +103,13 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
     document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
+
+    // Logout button functionality
+    document.getElementById('logout-btn').addEventListener('click', function(){
+      localStorage.removeItem("nb_logged_in_user");
+      alert("Logged out successfully!");
+      window.location.href = "login.html";
+    });
   </script>
 </body>
 </html>
