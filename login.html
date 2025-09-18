@@ -16,7 +16,7 @@
         <div class="logo">NB</div>
         <div class="brand-text">
           <div class="brand-title"><span class="site-name"></span></div>
-          <div class="brand-sub">Sign in (local demo)</div>
+          <div class="brand-sub">Sign in to post listings</div>
         </div>
       </a>
 
@@ -30,18 +30,18 @@
 
   <main class="container auth-wrap">
     <div class="auth-card">
-      <h2>Login (demo)</h2>
+      <h2>Login</h2>
       <form id="login-form" class="form-grid">
-        <label>Display Name
-          <input name="username" placeholder="e.g. Suresh" class="input" required />
+        <label>Username
+          <input name="username" placeholder="sohaum" class="input" required />
         </label>
-        <label>Contact (phone or email)
-          <input name="email" placeholder="98XXXXXXXX or you@email.com" class="input" required />
+        <label>Password
+          <input name="password" type="password" placeholder="sohaum" class="input" required />
         </label>
         <div class="form-actions">
           <button class="btn btn-primary" type="submit">Sign in</button>
         </div>
-        <p class="muted small">This is a client-side demo. Signing in stores your name locally and auto-fills seller name in listings.</p>
+        <p id="login-msg" class="muted small"></p>
       </form>
     </div>
   </main>
@@ -57,6 +57,22 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
     document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
+
+    // Login functionality
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const username = this.username.value.trim();
+      const password = this.password.value.trim();
+
+      // Only allow user: sohaum / password: sohaum
+      if(username === "sohaum" && password === "sohaum"){
+        localStorage.setItem("nb_logged_in_user", username); // store login
+        window.location.href = "sell.html"; // redirect to Sell page
+      } else {
+        document.getElementById('login-msg').textContent = "Invalid username or password!";
+      }
+    });
   </script>
 </body>
 </html>
