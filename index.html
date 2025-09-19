@@ -52,17 +52,14 @@
           <a class="btn btn-ghost" href="sell.html">List an Item</a>
         </div>
       </div>
-
-      <div class="hero-right">
-        <!-- Dynamic ad / featured injected by app.js -->
-      </div>
+      <div class="hero-right"><!-- Dynamic featured ad injected --></div>
     </div>
   </section>
 
   <!-- Trending Section -->
-  <section class="section trending">
+  <section class="section trending container">
     <div class="section-head">
-      <h2>Trending</h2>
+      <h2>🔥 Trending</h2>
       <button id="pin-ad-btn" class="btn btn-sm" style="display:none;">Pin Ad</button>
     </div>
     <div class="trending-wrapper">
@@ -75,21 +72,13 @@
   <!-- All Listings -->
   <main class="container main-grid">
     <section class="content">
-      <div class="section-head">
-        <h2>All Listings</h2>
-      </div>
+      <div class="section-head"><h2>All Listings</h2></div>
       <div id="home-grid" class="card-grid"></div>
     </section>
 
     <aside class="sidebar">
-      <div class="ad-slot">
-        <img src="assets/images/ad1.jpg" alt="Ad 1" onerror="this.style.display='none'"/>
-      </div>
-
-      <div class="ad-slot small">
-        <img src="assets/images/ad2.jpg" alt="Ad 2" onerror="this.style.display='none'"/>
-      </div>
-
+      <div class="ad-slot"><img src="assets/images/ad1.jpg" alt="Ad 1" onerror="this.style.display='none'"/></div>
+      <div class="ad-slot small"><img src="assets/images/ad2.jpg" alt="Ad 2" onerror="this.style.display='none'"/></div>
       <div class="sidebar-card">
         <h3>Post quickly</h3>
         <p class="muted">List your item in under a minute. Add photos & contact details so buyers can reach you directly.</p>
@@ -114,7 +103,7 @@
     document.getElementById('year').textContent = new Date().getFullYear();
     document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
-    // Logged-in state
+    // User session
     const loggedUser = localStorage.getItem("nb_logged_in_user");
     const loginLink = document.getElementById("login-link");
     const userInfo = document.getElementById("user-info");
@@ -127,22 +116,19 @@
       userInfo.style.display = "inline";
       usernameDisplay.textContent = loggedUser;
 
-      // Only show pin button to admin
-      if(loggedUser === "sohaum") {
-        pinBtn.style.display = "inline-block";
-      }
+      if(loggedUser === "sohaum") { pinBtn.style.display = "inline-block"; }
     } else {
       loginLink.style.display = "inline";
       userInfo.style.display = "none";
     }
 
-    logoutBtn.addEventListener("click", function(e){
+    logoutBtn.addEventListener("click", e => {
       e.preventDefault();
       localStorage.removeItem("nb_logged_in_user");
       location.reload();
     });
 
-    // --- TRENDING (Pinned Ads) ---
+    // TRENDING (Pinned Ads)
     const trendingScroll = document.getElementById("trending-scroll");
     const pinnedProducts = (window.NB_PRODUCTS || []).filter(p => p.pinned).slice(0,10);
 
@@ -152,19 +138,16 @@
         const card = document.createElement("div");
         card.className = "trending-card";
         card.innerHTML = `
-          <img src="${p.images?.[0] || 'assets/images/placeholder.jpg'}" alt="">
+          <img src="${p.images?.[0] || 'assets/images/placeholder.jpg'}" alt="${p.title}">
           <div class="info">
             <h4>${p.title}</h4>
             <p>Rs. ${p.price}</p>
-          </div>
-        `;
+          </div>`;
         trendingScroll.appendChild(card);
       });
     }
-
     renderTrending();
 
-    // Arrows scroll
     document.getElementById("trending-left").onclick = () => {
       trendingScroll.scrollBy({ left: -300, behavior: "smooth" });
     };
@@ -172,7 +155,7 @@
       trendingScroll.scrollBy({ left: 300, behavior: "smooth" });
     };
 
-    // --- All Listings ---
+    // ALL LISTINGS
     let products = window.NB_PRODUCTS || [];
     const homeGrid = document.getElementById("home-grid");
 
@@ -186,20 +169,17 @@
       products.forEach(product => {
         const card = document.createElement("div");
         card.className = "product-card";
-
         card.innerHTML = `
-          <img src="${product.images && product.images[0] ? product.images[0] : 'assets/images/placeholder.jpg'}" alt="product image">
+          <img src="${product.images?.[0] || 'assets/images/placeholder.jpg'}" alt="">
           <h3>${product.title}</h3>
           <p>Price: Rs. ${product.price}</p>
           <p>Seller: ${product.seller}</p>
           <p>Location: ${product.location}</p>
           <p>${product.description}</p>
-          ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}
-        `;
-
+          ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}`;
+        
         if(loggedUser === "sohaum") {
-          const btn = card.querySelector(".delete-btn");
-          btn.addEventListener("click", () => {
+          card.querySelector(".delete-btn").addEventListener("click", () => {
             if(confirm("Delete this listing?")) {
               products = products.filter(p => p.id !== product.id);
               saveProducts();
@@ -207,11 +187,9 @@
             }
           });
         }
-
         homeGrid.appendChild(card);
       });
     }
-
     renderHomeListings();
   </script>
 </body>
