@@ -53,7 +53,8 @@
       </div>
 
       <div class="hero-right">
-        <div class="hero-card neon-card">
+        <!-- Featured / pinned ad -->
+        <div class="hero-card neon-card" id="pinned-ad">
           <img src="assets/images/hero-1.jpg" alt="hero image" onerror="this.style.display='none'"/>
           <div class="meta">Featured: Gaming Laptop — Rs. 85,000</div>
         </div>
@@ -105,123 +106,54 @@
   </footer>
 
   <script src="js/app.js"></script>
-<script>
-  // Use the correct global array
-let products = window.NB_PRODUCTS || [];
+  <script>
+    // Year + branding
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
-// --- Render latest listings with delete button for Sohaum only ---
-const homeGrid = document.getElementById("home-grid");
+    // Logged-in state
+    const loggedUser = localStorage.getItem("nb_logged_in_user");
+    const loginLink = document.getElementById("login-link");
+    const userInfo = document.getElementById("user-info");
+    const usernameDisplay = document.getElementById("username-display");
+    const logoutBtn = document.getElementById("logout-btn");
 
-function renderHomeListings() {
-  homeGrid.innerHTML = ""; // clear previous
-  products.forEach(product => {
-    const card = document.createElement("div");
-    card.className = "product-card";
-
-    card.innerHTML = `
-      <img src="${product.images?.[0] || 'assets/images/placeholder.jpg'}" alt="product image">
-      <h3>${product.title}</h3>
-      <p>Price: Rs. ${product.price}</p>
-      <p>Seller: ${product.seller}</p>
-      <p>Location: ${product.location}</p>
-      <p>${product.description}</p>
-      ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}
-    `;
-
-    if(loggedUser === "sohaum") {
-      const btn = card.querySelector(".delete-btn");
-      if(btn) {
-        btn.addEventListener("click", () => {
-          if(confirm("Are you sure you want to delete this listing?")) {
-            products = products.filter(p => p.id !== product.id);
-            window.NB_PRODUCTS = products; // update global
-            localStorage.setItem("nb_products_v1", JSON.stringify(products)); // persist
-            renderHomeListings();
-          }
-        });
-      }
+    if(loggedUser){
+      loginLink.style.display = "none";
+      userInfo.style.display = "inline";
+      usernameDisplay.textContent = loggedUser;
+    } else {
+      loginLink.style.display = "inline";
+      userInfo.style.display = "none";
     }
 
-    homeGrid.appendChild(card);
-  });
-}
-
-renderHomeListings();
-
-  document.getElementById('year').textContent = new Date().getFullYear();
-  document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
-
-  // Logged-in state
-  const loggedUser = localStorage.getItem("nb_logged_in_user");
-  const loginLink = document.getElementById("login-link");
-  const userInfo = document.getElementById("user-info");
-  const usernameDisplay = document.getElementById("username-display");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  if(loggedUser){
-    loginLink.style.display = "none";
-    userInfo.style.display = "inline";
-    usernameDisplay.textContent = loggedUser;
-  } else {
-    loginLink.style.display = "inline";
-    userInfo.style.display = "none";
-  }
-
-  logoutBtn.addEventListener("click", function(e){
-    e.preventDefault();
-    localStorage.removeItem("nb_logged_in_user");
-    location.reload();
-  });
-
-  // --- Render latest listings with delete button for Sohaum only ---
-  const homeGrid = document.getElementById("home-grid");
-
-  // Use global products array from product-data.js
-  let products = window.NB_PRODUCTS || [];
-
-  // Save to localStorage function
-  function saveProducts() {
-    window.NB_PRODUCTS = products;
-    try {
-      localStorage.setItem(window.LOCAL_STORAGE_KEY || "nb_products_v1", JSON.stringify(products));
-    } catch(e) {
-      console.warn("Failed saving products", e);
-    }
-  }
-
-  function renderHomeListings() {
-    homeGrid.innerHTML = ""; // clear previous
-    products.forEach(product => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-
-      card.innerHTML = `
-        <img src="${product.images && product.images[0] ? product.images[0] : 'assets/images/placeholder.jpg'}" alt="product image">
-        <h3>${product.title}</h3>
-        <p>Price: Rs. ${product.price}</p>
-        <p>Seller: ${product.seller}</p>
-        <p>Location: ${product.location}</p>
-        <p>${product.description}</p>
-        ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}
-      `;
-
-      // Add delete functionality for Sohaum only
-      if(loggedUser === "sohaum") {
-        card.querySelector(".delete-btn").addEventListener("click", () => {
-          if(confirm("Are you sure you want to delete this listing?")){
-            products = products.filter(p => p.id !== product.id);
-            saveProducts();
-            renderHomeListings();
-          }
-        });
-      }
-
-      homeGrid.appendChild(card);
+    logoutBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      localStorage.removeItem("nb_logged_in_user");
+      location.reload();
     });
-  }
 
-  renderHomeListings();
-</script>
+    // --- Make the pinned ad clickable like a normal product ---
+    const pinnedAd = document.getElementById("pinned-ad");
+    if (pinnedAd) {
+      pinnedAd.addEventListener("click", () => {
+        const featuredProduct = {
+          title: "Gaming Laptop",
+          price: "85000",
+          seller: "Sohaum (Admin)",
+          location: "Kathmandu",
+          description: "High-performance gaming laptop with 16GB RAM, RTX graphics card, and SSD.",
+          images: ["assets/images/hero-1.jpg"]
+        };
+
+        if (window.openProductModal) {
+          window.openProductModal(featuredProduct);
+        } else {
+          alert("Gaming Laptop — Rs. 85,000\nSeller: Sohaum\nKathmandu");
+        }
+      });
+    }
+  </script>
 
   <script src="js/nb-fixes.js"></script>
 </body>
