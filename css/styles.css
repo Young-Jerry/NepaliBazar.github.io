@@ -1,5 +1,5 @@
 /* NEPALI BAZAR - Game-like neon aesthetic CSS
-   Cleaned version without Hero
+   Cleaned + unified version (Daraz/Amazon style trending)
 */
 
 :root{
@@ -96,11 +96,14 @@ body::before{
   display:flex;flex-direction:column;gap:10px;
 }
 .card:hover{transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,0.7)}
-.card .thumb{height:160px;border-radius:10px;overflow:hidden;background:#061024;display:grid;place-items:center}
+.card .thumb{height:160px;border-radius:10px;overflow:hidden;background:#061024;display:grid;place-items:center;position:relative}
 .card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .card .title{font-weight:700}
 .card .price{color:var(--neon-1);font-weight:800}
 .card .meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.card .card-right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.card .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));min-width:44px;min-height:40px;font-weight:600;cursor:pointer}
+.card .btn svg, .card .btn img{width:18px;height:18px}
 
 /* Sidebar ads */
 .ad-slot{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:8px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.03)}
@@ -166,148 +169,34 @@ textarea{background:rgba(20,20,20,0.95);border:1px solid rgba(255,255,255,0.03);
 .small{font-size:13px}
 a,p,li,label,input,select,textarea,.muted,.title,.meta,.brand-sub{color:#e6f0ff}
 
-/* Ads + hero fix */
+/* Ads */
 .ad-slot img{width:100%;height:auto;object-fit:cover}
 
-/* Modal */
-.nb-modal{position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:9999}
-.nb-modal .nb-modal-content{background:#071027;color:#fff;padding:18px;border-radius:12px;max-width:700px;width:92%;position:relative;border:1px solid rgba(255,255,255,0.06)}
-.nb-modal-close{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#fff;font-size:20px;padding:6px 10px;border-radius:6px;cursor:pointer}
-/* === TRENDING SECTION (fixed centered strip) === */
-.trending {
-  margin: 40px 0;
-}
-
-.trending-wrapper {
-  position: relative;
-  max-width: var(--maxwidth);  /* stays same as container */
-  margin: 0 auto;              /* center the whole wrapper */
-  overflow: hidden;            /* hide extra */
-}
-
-.trending-scroll {
-  display: inline-flex;
-  gap: 16px;
-  padding: 12px;
-  scroll-behavior: smooth;
-  overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-  position: relative;
-}
-.trending-scroll::-webkit-scrollbar { display: none; }
-
-/* invisible side "guards" to lock centering */
-.trending-scroll::before,
-.trending-scroll::after {
-  content: "";
-  flex: 0 0 50%; /* push content to center */
-}
-
-.trending-card {
-  min-width: 200px;
-  max-width: 220px;
-  flex: 0 0 auto;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.03);
-  box-shadow: 0 6px 26px rgba(10,14,24,0.6);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.trending-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 0 14px var(--neon-1), 0 0 28px var(--neon-2);
-}
-.trending-card img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-  display: block;
-}
-.trending-card .info {
-  padding: 10px;
-}
-.trending-card h4 {
-  margin: 0 0 6px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-}
-.trending-card p {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--neon-1);
-}
-
-/* arrows */
-.trending-wrapper .arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(10,10,20,0.8);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #fff;
-  font-size: 22px;
-  padding: 8px 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 10;
-  transition: background 0.2s;
-}
-.trending-wrapper .arrow:hover {
-  background: linear-gradient(90deg,var(--neon-1),var(--neon-2));
-  color: #041026;
-}
-.trending-wrapper .arrow.left { left: -10px; }
-.trending-wrapper .arrow.right { right: -10px; }
-
-
-/* --- Hero banner --- */
-.hero{max-width:var(--maxwidth);margin:18px auto;padding:18px;border-radius:12px;background:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));display:flex;align-items:center;gap:16px;border:1px solid rgba(255,255,255,0.04)}
-.hero-inner{display:flex;align-items:center;gap:12px}
-.hero-logo{width:84px;height:84px;object-fit:cover;border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.04)}
-.hero-text h1{margin:0;font-size:20px;color:var(--accent-2);}
-.hero-text p{margin:0;color:var(--muted)}
-
-/* --- Left collapsible sidebar --- */
-.left-toggle{position:fixed;left:12px;top:16px;z-index:1200;background:var(--glass);border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04);backdrop-filter: blur(4px)}
-.leftbar{position:fixed;left:0;top:0;bottom:0;width:240px;transform:translateX(-260px);transition:transform .22s ease;z-index:1100;padding:18px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));box-shadow:8px 0 40px rgba(0,0,0,0.6);overflow:auto}
-.leftbar nav a{display:block;padding:10px 6px;border-radius:8px;margin-bottom:6px;color:white;text-decoration:none;font-weight:600}
-.leftbar .left-close{position:absolute;right:8px;top:8px;background:transparent;border:none;color:var(--muted);font-size:18px}
-body.left-open .leftbar{transform:translateX(0);}
-body.left-open{padding-left:240px;transition:padding-left .22s ease}
-
-/* Trending adjustments: fix width and horizontal scrolling */
-.trending {min-width:260px;max-width:360px;overflow-x:hidden}
-.trending-scroll{display:flex;gap:10px;overflow-x:auto;padding:8px}
-.trending-card{min-width:160px;flex:0 0 160px}
-
-/* ensure pinned badge stacks to left-top */
-.card .thumb div[style*='📌']{left:8px;top:8px}
-
-
-
-/* --- Card action buttons (aligned, consistent) --- */
-.card .card-right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-.card .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));min-width:44px;min-height:40px;font-weight:600;cursor:pointer}
-.card .btn svg, .card .btn img{width:18px;height:18px}
-
-/* --- Trending area: larger cards and pinned badge --- */
-.trending{padding:8px}
-.trending-scroll{display:flex;gap:12px;overflow-x:auto;padding:6px 2px}
-.trending-card{flex:0 0 220px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));border-radius:12px;padding:8px;border:1px solid rgba(255,255,255,0.03);display:flex;gap:8px;align-items:center}
-.trending-thumb img{width:84px;height:84px;object-fit:cover;border-radius:8px}
-.trending-body{flex:1;min-width:0}
-.trending-card .t-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* --- Trending carousel (Daraz/Amazon style) --- */
+.trending-section{max-width:var(--maxwidth);margin:18px auto;padding:6px 12px;position:relative}
+.trending-wrap{position:relative;display:flex;align-items:center}
+.trending-scroll{display:flex;gap:12px;overflow-x:auto;scroll-behavior:smooth;padding:8px 40px;width:100%}
+.trending-scroll::-webkit-scrollbar{height:8px}
+.trending-card{flex:0 0 220px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));border-radius:10px;padding:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px;min-height:140px;max-width:220px;position:relative}
+.trending-card img{width:100%;height:120px;object-fit:cover;border-radius:8px}
+.trending-card .t-title{font-weight:700;font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trending-card .t-price{color:var(--neon-1);font-weight:800;margin-top:6px}
-.pinned-card::before{content:'📌';position:absolute;margin-left:-6px;margin-top:-6px;}
+.trending-card .t-meta{font-size:12px;color:var(--muted);margin-top:4px}
+.trending-card .t-actions{margin-top:auto;display:flex;justify-content:flex-end}
+.trending-card.pinned::before{content:'📌';position:absolute;top:6px;left:6px;font-size:18px}
+.trending-arrow{position:absolute;left:6px;top:50%;transform:translateY(-50%);z-index:2000;background:var(--glass);border:1px solid rgba(255,255,255,0.06);width:36px;height:36px;border-radius:50%;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.trending-arrow.right{left:auto;right:6px}
+@media (max-width:700px){
+  .trending-card{flex:0 0 160px;max-width:160px;min-height:120px}
+  .trending-scroll{padding:8px 28px}
+  .trending-arrow{width:34px;height:34px;font-size:18px}
+}
+.trending-arrow{box-shadow:0 6px 18px rgba(0,0,0,0.55)}
 
-/* --- Modal styles --- */
+/* Modal */
 #nb-modal{display:none;position:fixed;inset:0;align-items:center;justify-content:center;z-index:99999;background:rgba(0,0,0,0.45)}
-#nb-modal .nb-modal-body{max-width:900px;width:95%;background:linear-gradient(180deg, rgba(6,8,16,0.98), rgba(7,10,20,0.96));border-radius:12px;padding:18px;color:#fff;position:relative}
-.nb-modal-card{display:flex;gap:18px}
+#nb-modal .nb-modal-body{max-width:980px;width:95%;background:linear-gradient(180deg, rgba(6,8,16,0.98), rgba(7,10,20,0.96));border-radius:12px;padding:20px;color:#fff;position:relative}
+.nb-modal-card{display:flex;gap:18px;flex-direction:row;align-items:flex-start}
 .nb-modal-left{flex:0 0 40%}
 .modal-images img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin-bottom:6px}
 .nb-modal-right{flex:1}
@@ -316,34 +205,6 @@ body.left-open{padding-left:240px;transition:padding-left .22s ease}
 .modal-desc{color:var(--muted);white-space:pre-wrap}
 .modal-actions{display:flex;gap:8px;margin-top:12px}
 .modal-actions .btn{min-width:110px;padding:10px 12px;border-radius:10px}
-
-
-
-/* --- Trending carousel (Daraz/Amazon style) --- */
-.trending-section{max-width:var(--maxwidth);margin:18px auto;padding:6px 12px;position:relative}
-.trending-wrap{position:relative;display:flex;align-items:center}
-.trending-scroll{display:flex;gap:12px;overflow-x:auto;scroll-behavior:smooth;padding:8px 40px;width:100%}
-.trending-scroll::-webkit-scrollbar{height:8px}
-.trending-card{flex:0 0 220px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));border-radius:10px;padding:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px;min-height:140px;max-width:220px}
-.trending-card img{width:100%;height:120px;object-fit:cover;border-radius:8px}
-.trending-card .t-title{font-weight:700;font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trending-card .t-price{color:var(--neon-1);font-weight:800;margin-top:6px}
-.trending-card .t-meta{font-size:12px;color:var(--muted);margin-top:4px}
-.trending-card .t-actions{margin-top:auto;display:flex;justify-content:flex-end}
-.trending-arrow{position:absolute;left:6px;top:50%;transform:translateY(-50%);z-index:2000;background:var(--glass);border:1px solid rgba(255,255,255,0.06);width:36px;height:36px;border-radius:50%;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.trending-arrow.right{left:auto;right:6px}
-@media (max-width:700px){
-  .trending-card{flex:0 0 160px;max-width:160px;min-height:120px}
-  .trending-scroll{padding:8px 28px}
-  .trending-arrow{width:34px;height:34px;font-size:18px}
-}
-
-/* ensure arrow sits above header or other fixed elements */
-.trending-arrow{box-shadow:0 6px 18px rgba(0,0,0,0.55)}
-
-/* Modal fine-tuning for improved view */
-#nb-modal .nb-modal-body{max-width:980px;padding:20px}
-.nb-modal-card{display:flex;gap:18px;flex-direction:row;align-items:flex-start}
 @media (max-width:800px){
   .nb-modal-card{flex-direction:column}
   .nb-modal-left{width:100%}
