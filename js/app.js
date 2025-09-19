@@ -1,18 +1,19 @@
-/* Full app.js — copy-paste entire file to js/app.js
-   Implements:
-   - working category + price filters (index + products)
-   - View / Contact open an in-page modal (final popup) — no mailto links or extra buttons inside the popup (only close X)
-   - profile UI integration, profile page rendering
-   - per-user delete rules:
-       * sohaum = admin (can delete any listing anywhere)
-       * normal users (e.g. sneha) can only delete their own listings and only from their profile page
-   - injects Profile link into header when logged in
-   - ad hover animation (JS fallback) and ad click links
+/* Full app.js — paste whole file to js/app.js
+   Features:
+   - expiryDate support (max 7 days). Required on publish.
+   - expired ads auto-filtered and removed from listing views.
+   - removed price-high/low filter; sorting is by newest (createdAt).
+   - "View" and "Contact" open an in-page informational modal (final popup) with only close X.
+   - profile support: sohaum = admin (delete anywhere); other users delete only their own items in profile.
+   - injects Profile link when logged in.
+   - ad hover animation (JS driven).
+   - exposes renderHomeGrid, renderProductsPage, renderProfilePage globally.
 */
 
 (function () {
   const KEY = window.LOCAL_STORAGE_KEY || 'nb_products_v1';
-  const MAX_PRICE = 100000000;
+  const MAX_PRICE = 100000000; // safety cap
+  const MAX_EXPIRY_DAYS = 7;
 
   const el = sel => document.querySelector(sel);
   const els = sel => Array.from(document.querySelectorAll(sel));
@@ -22,49 +23,77 @@
   function numberWithCommas(x) { try { return Number(x).toLocaleString('en-IN'); } catch (e) { return x; } }
   function getCurrentUser() { try { return localStorage.getItem('nb_logged_in_user') || null; } catch (e) { return null; } }
 
-  // Products helpers
-  function getProducts() {
+  // --- Products helpers (reads from localStorage; auto-filters expired ads)
+  function getProductsRaw() {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) return JSON.parse(raw);
-    } catch (e) { /* ignore */ }
-    // fallback to any global
-    return (window.NB_PRODUCTS && Array.isArray(window.NB_PRODUCTS)) ? window.NB_PRODUCTS.slice() : [];
+    } catch (e) { console.warn('Failed read products', e); }
+    if (Array.isArray(window.NB_PRODUCTS)) return window.NB_PRODUCTS.slice();
+    return [];
   }
+
+  function getProducts() {
+    // filter expired (expiryDate inclusive). Also normalize date comparisons by using YYYY-MM-DD or Date
+    const today = new Date();
+    const raw = getProductsRaw();
+    const filtered = raw.filter(p => {
+      if (!p) return false;
+      if (!p.expiryDate) return true; // no expiry => keep
+      try {
+        const exp = new Date(p.expiryDate);
+        // If exp day ends at 23:59:59 local time, allow items through that day. Compare using date midnight.
+        // We treat exp >= today (i.e. not expired) as keep.
+        return exp >= new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      } catch (e) { return true; }
+    });
+    return filtered;
+  }
+
   function saveProducts(list) {
-    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { console.warn(e); }
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list));
+    } catch (e) { console.warn('Failed save products', e); }
   }
 
   function canDeleteProduct(product) {
     const user = getCurrentUser();
     if (!user) return false;
     if (user === 'sohaum') return true; // admin
-    // normal user can delete only own product — allowed only from profile page
+    // normal user: can delete own product only on their profile page
     if (product && product.seller === user && isProfilePage()) return true;
     return false;
   }
 
-  // Create a product card. Will only show Delete button if allowed per rules.
+  // --- Create product card DOM
   function createCard(product) {
     const card = document.createElement('div');
     card.className = 'card';
     const img = (product.images && product.images[0]) ? product.images[0] : 'assets/images/placeholder.jpg';
     const priceDisplay = (Number(product.price) === 0) ? 'FREE' : (product.currency || 'Rs.') + ' ' + numberWithCommas(product.price);
+    const posted = product.createdAt || '';
+    const expires = product.expiryDate || '';
 
     card.innerHTML = `
       <div class="thumb"><img src="${escapeHtml(img)}" alt="${escapeHtml(product.title)}" onerror="this.src='assets/images/placeholder.jpg'"/></div>
       <div class="title">${escapeHtml(product.title)}</div>
       <div class="meta"><div class="price">${priceDisplay}</div><div class="muted small">${escapeHtml(product.location||'')}</div></div>
-      <div class="card-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
-        <div style="display:flex;gap:8px;">
-          <button class="btn view-btn" data-id="${escapeHtml(product.id)}">View</button>
-          <button class="btn contact-btn" data-id="${escapeHtml(product.id)}">Contact</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;gap:8px;">
+            <button class="btn view-btn" data-id="${escapeHtml(product.id)}">View</button>
+            <button class="btn contact-btn" data-id="${escapeHtml(product.id)}">Contact</button>
+          </div>
+          <div style="margin-top:6px;font-size:12px;color:var(--muted);">
+            <span>Posted: ${escapeHtml(posted)}</span>
+            ${expires ? `<span style="margin-left:8px">Expires: ${escapeHtml(expires)}</span>` : ''}
+          </div>
         </div>
         <div class="card-right"></div>
       </div>
     `;
 
-    // Delete button: only show when allowed (admin anywhere; normal user only on profile page & their own listings)
+    // delete button if authorized
     if (canDeleteProduct(product)) {
       const del = document.createElement('button');
       del.className = 'btn btn-danger delete-inline';
@@ -78,35 +107,31 @@
       if (right) right.appendChild(del);
     }
 
-    // Keep product id on element for delegation convenience
+    // attach id dataset on top-level for delegation convenience
+    card.setAttribute('data-id', product.id);
     return card;
   }
 
   function deleteProductById(id) {
-    const list = getProducts();
+    const list = getProductsRaw();
     const product = list.find(p => p.id === id);
     if (!product) return alert('Listing not found');
-    // double-check permissions
-    if (!canDeleteProduct(product)) {
-      return alert('Not authorized to delete this listing.');
-    }
+    if (!canDeleteProduct(product)) return alert('Not authorized to delete this listing.');
     const updated = list.filter(p => p.id !== id);
     saveProducts(updated);
-    // rerender visible pages
+    // rerender
     if (el('#home-grid')) renderHomeGrid();
     if (el('#products-grid')) renderProductsPage();
     if (el('#profile-listings')) renderProfilePage();
   }
 
-  // modal (final popup) - no mailto, no external buttons except close
+  // --- Modal (final popup) - only close X allowed inside content
   function showModalHtml(html) {
-    // use existing #nb-modal if present
     const builtin = el('#nb-modal');
     if (builtin && builtin.querySelector('#nb-modal-body')) {
       const body = builtin.querySelector('#nb-modal-body');
       body.innerHTML = html;
       builtin.style.display = 'flex';
-      // close handlers
       const closeBtn = builtin.querySelector('.nb-modal-close');
       if (closeBtn) closeBtn.onclick = () => { builtin.style.display = 'none'; body.innerHTML = ''; };
       builtin.onclick = (ev) => { if (ev.target === builtin) { builtin.style.display = 'none'; body.innerHTML = ''; } };
@@ -132,8 +157,9 @@
     document.addEventListener('keydown', esc);
   }
 
-  // product detail content for modal (no buttons)
   function buildProductModalHtml(product) {
+    const posted = product.createdAt || '';
+    const expires = product.expiryDate || '';
     return `
       <div style="display:flex;gap:16px;flex-wrap:wrap;">
         <div style="flex:0 0 220px;"><img src="${escapeHtml((product.images&&product.images[0])?product.images[0]:'assets/images/placeholder.jpg')}" style="width:220px;height:150px;object-fit:cover;border-radius:6px;" onerror="this.src='assets/images/placeholder.jpg'"/></div>
@@ -145,23 +171,24 @@
           <hr style="opacity:0.06;margin:8px 0">
           <p style="max-height:240px;overflow:auto;margin:0;padding-right:6px">${escapeHtml(product.description||'')}</p>
           <p style="margin-top:10px;"><strong>Contact:</strong> ${escapeHtml(product.contact||'')}</p>
+          <p style="margin-top:8px;font-size:13px;color:var(--muted)">Posted: ${escapeHtml(posted)} ${expires ? ` | Expires: ${escapeHtml(expires)}` : ''}</p>
           <p style="margin-top:6px;color:var(--muted);font-size:13px">This is an informational popup. Close (✕) to return to the site.</p>
         </div>
       </div>
     `;
   }
 
-  // open modal for view/contact (both same content, contactOnly just focuses but content is identical)
   function openProductModal(product, contactOnly) {
+    // contactOnly ignored because requirements say show same final popup (no extra buttons)
     const html = buildProductModalHtml(product);
     showModalHtml(html);
   }
 
-  // global search init (goes to products.html?q=)
+  // --- Search
   function initGlobalSearch() {
     const ids = ['#global-search', '#global-search-top', '#global-search-product', '#global-search-sell', '#search-products', '#search-products-top', '#search-products-global'];
     let s = null;
-    for (const id of ids) { const eln = document.querySelector(id); if (eln) { s = eln; break; } }
+    for (const id of ids) { const n = document.querySelector(id); if (n) { s = n; break; } }
     if (!s) return;
     s.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -173,7 +200,6 @@
     });
   }
 
-  // Fill search inputs from ?q=
   function prefillSearchFromQuery() {
     const url = new URL(window.location.href);
     const q = url.searchParams.get('q') || '';
@@ -182,16 +208,15 @@
     ids.forEach(id => { const n = document.querySelector(id); if (n) n.value = q; });
   }
 
-  // categories dropdown population and change listeners (both index and products)
+  // --- Categories (populate and attach change handlers)
   function initCategories() {
-    const products = getProducts();
+    const products = getProductsRaw();
     const cats = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
     const selects = document.querySelectorAll('#filter-category');
     selects.forEach(sel => {
       const prev = sel.value || '';
       sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
       if (prev) sel.value = prev;
-      // attach change to re-render
       sel.addEventListener('change', () => {
         if (el('#home-grid')) renderHomeGrid();
         if (el('#products-grid')) renderProductsPage();
@@ -200,7 +225,7 @@
     });
   }
 
-  // Ads: inject images, add hover animation via JS (so you can paste without editing CSS)
+  // --- Ads injection & hover animation
   function initAds() {
     const adSlots = document.querySelectorAll('.ad-slot');
     if (!adSlots || adSlots.length === 0) return;
@@ -215,26 +240,45 @@
       img.alt = 'ad';
       img.style.maxWidth = '100%';
       img.style.display = 'block';
-      // hover effects
       img.style.transition = 'transform .18s ease, box-shadow .18s ease';
       a.appendChild(img);
       slot.innerHTML = '';
       slot.appendChild(a);
-      // hover via events (works even if CSS missing)
       a.addEventListener('mouseenter', () => { img.style.transform = 'translateY(-6px) scale(1.03)'; img.style.boxShadow = '0 18px 60px rgba(0,0,0,0.6)'; });
       a.addEventListener('mouseleave', () => { img.style.transform = ''; img.style.boxShadow = ''; });
     });
   }
 
-  // SELL form initialization (enforce phone/email, price)
+  // --- Sell form init: add expiry date field if not present, validate max 7 days
   function initSellForm() {
     const form = el('#sell-form') || el('form#sell');
     if (!form) return;
+
+    // ensure expiry date input exists
+    if (!form.querySelector('[name="expiryDate"]')) {
+      const wrap = document.createElement('label');
+      wrap.innerHTML = `Expiry Date (max ${MAX_EXPIRY_DAYS} day(s) from today)
+        <input type="date" name="expiryDate" required class="input" />`;
+      // insert before form-actions if exists, else at end
+      const actions = form.querySelector('.form-actions');
+      if (actions) form.insertBefore(wrap, actions);
+      else form.appendChild(wrap);
+
+      // set min/max
+      const inp = wrap.querySelector('input[name="expiryDate"]');
+      const today = new Date();
+      const min = today.toISOString().split('T')[0];
+      const max = new Date(today.getTime() + MAX_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      inp.min = min;
+      inp.max = max;
+      inp.value = max;
+    }
+
+    // phone/email sanitization
     const phone = form.querySelector('[name="contact"]');
     if (phone) {
       phone.setAttribute('placeholder', '10 digit phone number or email');
       phone.addEventListener('input', () => {
-        // allow digits and @ and dots; but keep length 10 for pure phone
         phone.value = phone.value.replace(/[^\d@.\-_a-zA-Z]/g, '').slice(0, 140);
       });
     }
@@ -246,13 +290,24 @@
       let price = Number(fd.get('price') || 0);
       const location = (fd.get('location') || fd.get('province') || '').trim();
       const contact = (fd.get('contact') || '').trim();
+      const expiryDate = fd.get('expiryDate');
+
       if (!title) return alert('Please provide a title');
       const phoneOk = /^\d{10}$/.test(contact);
       const emailOk = contact.includes('@');
       if (!phoneOk && !emailOk) return alert('Please enter a 10-digit phone number or an email');
       if (price < 0) price = 0;
       if (price > MAX_PRICE) return alert('Price exceeds maximum allowed.');
-      const id = window.NB_GENERATE_ID ? window.NB_GENERATE_ID() : ('p-' + Date.now());
+      if (!expiryDate) return alert('Please select an expiry date');
+
+      // validate expiry within allowed window
+      const today = new Date();
+      const min = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const max = new Date(today.getTime() + MAX_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+      const chosen = new Date(expiryDate);
+      if (chosen < min || chosen > max) return alert(`Expiry date must be between today and ${MAX_EXPIRY_DAYS} days from today.`);
+
+      const id = (window.NB_GENERATE_ID && typeof window.NB_GENERATE_ID === 'function') ? window.NB_GENERATE_ID() : ('p-' + Date.now() + '-' + Math.floor(Math.random() * 1000));
       const newProduct = {
         id,
         title,
@@ -264,9 +319,11 @@
         contact,
         description: fd.get('description') || '',
         images: ['assets/images/placeholder.jpg'],
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString().split('T')[0], // store YYYY-MM-DD
+        expiryDate: expiryDate // YYYY-MM-DD
       };
-      const list = getProducts();
+
+      const list = getProductsRaw();
       list.push(newProduct);
       saveProducts(list);
       alert(price === 0 ? 'Listing published as FREE!' : 'Listing published!');
@@ -274,11 +331,12 @@
     });
   }
 
-  // HEADER / AUTH UI — inject profile link and update login/userinfo UI
+  // --- AUTH UI: inject Profile link and update header user-info
   function initAuthUI() {
     const nav = document.querySelector('.nav');
     if (!nav) return;
-    // create profile link if not present
+
+    // ensure profile link exists
     let profileLink = document.getElementById('profile-link');
     if (!profileLink) {
       profileLink = document.createElement('a');
@@ -286,13 +344,11 @@
       profileLink.className = 'nav-link';
       profileLink.href = 'profile.html';
       profileLink.textContent = 'Profile';
-      // insert before login-link if exists
       const loginLink = document.getElementById('login-link');
       if (loginLink && loginLink.parentNode) loginLink.parentNode.insertBefore(profileLink, loginLink.nextSibling);
       else nav.appendChild(profileLink);
     }
 
-    // update display
     const loggedUser = getCurrentUser();
     const loginLink = document.getElementById('login-link');
     const userInfo = document.getElementById('user-info');
@@ -318,21 +374,18 @@
     }
   }
 
-  // Render home grid (works with homepage filters)
+  // --- Renderers (no price sort; default newest first)
   function renderHomeGrid(limit = 8) {
-    const grid = el('#home-grid');
-    if (!grid) return;
-    let list = getProducts().slice();
+    const grid = el('#home-grid'); if (!grid) return;
+    let list = getProducts().slice(); // already filtered for expiry
 
+    // category filter (if present)
     const catSel = el('#filter-category');
-    const sortSel = el('#filter-sort');
     const catVal = catSel ? catSel.value : '';
-    const sortVal = sortSel ? sortSel.value : '';
-
     if (catVal) list = list.filter(p => p.category === catVal);
-    if (sortVal === 'price-asc') list.sort((a, b) => Number(a.price) - Number(b.price));
-    else if (sortVal === 'price-desc') list.sort((a, b) => Number(b.price) - Number(a.price));
-    else list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // sort by createdAt descending (newest first)
+    list.sort((a, b) => (new Date(b.createdAt || 0)) - (new Date(a.createdAt || 0)));
 
     grid.innerHTML = '';
     const slice = list.slice(0, limit);
@@ -351,20 +404,20 @@
     }));
   }
 
-  // Render products page (full listing)
   function renderProductsPage() {
-    const grid = el('#products-grid');
-    if (!grid) return;
+    const grid = el('#products-grid'); if (!grid) return;
     const q = (el('#search-products') && el('#search-products').value) || (new URL(window.location.href).searchParams.get('q') || '');
     const cat = el('#filter-category') ? el('#filter-category').value : '';
-    const sort = el('#filter-sort') ? el('#filter-sort').value : '';
 
     let list = getProducts().slice();
-    if (q) list = list.filter(p => ((p.title || '') + ' ' + (p.description || '') + ' ' + (p.seller || '') + ' ' + (p.location || '')).toLowerCase().includes(q.toLowerCase()));
+    if (q) {
+      const ql = q.toLowerCase();
+      list = list.filter(p => (((p.title || '') + ' ' + (p.description || '') + ' ' + (p.seller || '') + ' ' + (p.location || '')).toLowerCase().includes(ql)));
+    }
     if (cat) list = list.filter(p => p.category === cat);
-    if (sort === 'price-asc') list.sort((a, b) => Number(a.price) - Number(b.price));
-    else if (sort === 'price-desc') list.sort((a, b) => Number(b.price) - Number(a.price));
-    else list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // newest first
+    list.sort((a, b) => (new Date(b.createdAt || 0)) - (new Date(a.createdAt || 0)));
 
     grid.innerHTML = '';
     if (list.length === 0) { grid.innerHTML = '<div class="muted">No listings found.</div>'; return; }
@@ -382,7 +435,6 @@
     }));
   }
 
-  // Render profile page (user's own listings + ability to delete own items)
   function renderProfilePage() {
     const container = el('#profile-listings');
     if (!container) return;
@@ -390,16 +442,11 @@
     if (!user) { window.location.href = 'login.html'; return; }
     const list = getProducts().filter(p => p.seller === user);
     container.innerHTML = '';
-
     if (list.length === 0) {
       container.innerHTML = '<div class="muted">You have not listed any items yet.</div>';
       return;
     }
-    list.forEach(p => {
-      const card = createCard(p); // createCard shows delete only when allowed
-      container.appendChild(card);
-    });
-
+    list.forEach(p => container.appendChild(createCard(p)));
     container.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', (e) => {
       const id = btn.dataset.id;
       const prod = getProducts().find(x => x.id === id);
@@ -412,14 +459,14 @@
     }));
   }
 
-  // expose renderers globally (pages call them)
+  // expose renderers
   window.renderHomeGrid = renderHomeGrid;
   window.renderProductsPage = renderProductsPage;
   window.renderProfilePage = renderProfilePage;
 
-  // initial setup
+  // --- Initialization
   document.addEventListener('DOMContentLoaded', () => {
-    // site name usage
+    // site name
     els('.site-name').forEach(n => { if (n.tagName === 'INPUT') n.value = window.SITE_NAME || 'NEPALI BAZAR'; else n.textContent = window.SITE_NAME || 'NEPALI BAZAR'; });
 
     initAuthUI();
@@ -429,12 +476,12 @@
     prefillSearchFromQuery();
     initSellForm();
 
-    // render depending on available elements
+    // initial render
     renderHomeGrid();
     renderProductsPage();
     renderProfilePage();
 
-    // fallback delegation: ensure any dynamically added buttons still work
+    // fallback body delegation for dynamically added buttons
     document.body.addEventListener('click', (ev) => {
       const t = ev.target;
       if (!t) return;
@@ -450,4 +497,5 @@
       }
     });
   });
+
 })();
