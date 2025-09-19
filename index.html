@@ -60,7 +60,6 @@
   <section class="section trending container">
     <div class="section-head">
       <h2>🔥 Trending</h2>
-      <button id="pin-ad-btn" class="btn btn-sm" style="display:none;">Pin Ad</button>
     </div>
     <div class="trending-wrapper">
       <button class="arrow left" id="trending-left">&#8249;</button>
@@ -109,14 +108,11 @@
     const userInfo = document.getElementById("user-info");
     const usernameDisplay = document.getElementById("username-display");
     const logoutBtn = document.getElementById("logout-btn");
-    const pinBtn = document.getElementById("pin-ad-btn");
 
     if(loggedUser){
       loginLink.style.display = "none";
       userInfo.style.display = "inline";
       usernameDisplay.textContent = loggedUser;
-
-      if(loggedUser === "sohaum") { pinBtn.style.display = "inline-block"; }
     } else {
       loginLink.style.display = "inline";
       userInfo.style.display = "none";
@@ -130,9 +126,9 @@
 
     // TRENDING (Pinned Ads)
     const trendingScroll = document.getElementById("trending-scroll");
-    const pinnedProducts = (window.NB_PRODUCTS || []).filter(p => p.pinned).slice(0,10);
 
     function renderTrending() {
+      const pinnedProducts = (window.NB_PRODUCTS || []).filter(p => p.pinned).slice(0,10);
       trendingScroll.innerHTML = "";
       pinnedProducts.forEach(p => {
         const card = document.createElement("div");
@@ -146,7 +142,6 @@
         trendingScroll.appendChild(card);
       });
     }
-    renderTrending();
 
     document.getElementById("trending-left").onclick = () => {
       trendingScroll.scrollBy({ left: -300, behavior: "smooth" });
@@ -176,21 +171,42 @@
           <p>Seller: ${product.seller}</p>
           <p>Location: ${product.location}</p>
           <p>${product.description}</p>
-          ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}`;
-        
+          ${loggedUser === "sohaum" ? `
+            <button class="delete-btn">Delete</button>
+            <button class="pin-btn">${product.pinned ? "📌 Unpin" : "📌 Pin"}</button>
+          ` : ""}`;
+
         if(loggedUser === "sohaum") {
+          // Delete button
           card.querySelector(".delete-btn").addEventListener("click", () => {
             if(confirm("Delete this listing?")) {
               products = products.filter(p => p.id !== product.id);
               saveProducts();
               renderHomeListings();
+              renderTrending();
             }
           });
+
+          // Pin button
+          card.querySelector(".pin-btn").addEventListener("click", () => {
+            const pinnedCount = products.filter(p => p.pinned).length;
+            if(!product.pinned && pinnedCount >= 10) {
+              alert("You can only pin up to 10 ads in Trending!");
+              return;
+            }
+            product.pinned = !product.pinned;
+            saveProducts();
+            renderHomeListings();
+            renderTrending();
+          });
         }
+
         homeGrid.appendChild(card);
       });
     }
+
     renderHomeListings();
+    renderTrending();
   </script>
 </body>
 </html>
