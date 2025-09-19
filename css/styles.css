@@ -209,7 +209,11 @@ a, p, li, label, input, select, textarea, .muted, .title, .meta, .brand-sub { co
   scroll-behavior: smooth;
   padding: 12px;
   scrollbar-width: none; /* Firefox */
+
+  /* FIX: center cards if they don’t overflow */
+  justify-content: center;
 }
+
 .trending-scroll::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
