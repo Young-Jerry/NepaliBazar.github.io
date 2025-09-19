@@ -11,7 +11,7 @@
   <!-- Main CSS -->
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- Config + data -->
+  <!-- Config + product data -->
   <script src="js/config.js"></script>
   <script src="js/product-data.js"></script>
 </head>
@@ -54,12 +54,12 @@
       </div>
 
       <div class="hero-right">
-        <!-- Pinned ad dynamically injected here by app.js -->
+        <!-- Dynamic ad / featured injected by app.js -->
       </div>
     </div>
   </section>
 
-  <!-- Main area: featured + grid -->
+  <!-- Main area -->
   <main class="container main-grid">
     <section class="content">
       <div class="section-head">
@@ -108,7 +108,6 @@
   <!-- Scripts -->
   <script src="js/app.js"></script>
   <script src="js/nb-fixes.js"></script>
-
   <script>
     // Footer branding
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -135,6 +134,48 @@
       localStorage.removeItem("nb_logged_in_user");
       location.reload();
     });
+
+    // --- Product rendering on home page ---
+    let products = window.NB_PRODUCTS || [];
+    const homeGrid = document.getElementById("home-grid");
+
+    function saveProducts() {
+      window.NB_PRODUCTS = products;
+      localStorage.setItem(window.LOCAL_STORAGE_KEY || "nb_products_v1", JSON.stringify(products));
+    }
+
+    function renderHomeListings() {
+      homeGrid.innerHTML = "";
+      products.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+
+        card.innerHTML = `
+          <img src="${product.images && product.images[0] ? product.images[0] : 'assets/images/placeholder.jpg'}" alt="product image">
+          <h3>${product.title}</h3>
+          <p>Price: Rs. ${product.price}</p>
+          <p>Seller: ${product.seller}</p>
+          <p>Location: ${product.location}</p>
+          <p>${product.description}</p>
+          ${loggedUser === "sohaum" ? '<button class="delete-btn">Delete</button>' : ''}
+        `;
+
+        if(loggedUser === "sohaum") {
+          const btn = card.querySelector(".delete-btn");
+          btn.addEventListener("click", () => {
+            if(confirm("Delete this listing?")) {
+              products = products.filter(p => p.id !== product.id);
+              saveProducts();
+              renderHomeListings();
+            }
+          });
+        }
+
+        homeGrid.appendChild(card);
+      });
+    }
+
+    renderHomeListings();
   </script>
 </body>
 </html>
