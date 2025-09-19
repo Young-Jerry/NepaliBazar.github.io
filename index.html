@@ -53,7 +53,7 @@
         </div>
       </div>
 
-      <!-- Right side: pinned ad or fallback -->
+      <!-- Right side: pinned ad slot -->
       <div class="hero-right" id="hero-ad-slot">
         <!-- Default fallback RTX ad -->
         <div class="hero-card neon-card" id="hero-fallback">
@@ -61,6 +61,17 @@
           <div class="meta">Featured: Gaming Laptop — Rs. 85,000</div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Intro + Pinned Ad section -->
+  <section class="container intro-pinned">
+    <div class="intro-left">
+      <h2>Welcome to Nepali Bazar</h2>
+      <p>Your trusted local marketplace to buy, sell, and connect with people around you. Whether you’re a student, professional, or entrepreneur — Nepali Bazar makes trading easy and safe.</p>
+    </div>
+    <div class="intro-right">
+      <div id="pinned-ad-slot" class="hero-card neon-card" style="display:none;"></div>
     </div>
   </section>
 
@@ -173,6 +184,17 @@
     modalClose.addEventListener("click", closeModal);
     modal.addEventListener("click", e => { if(e.target === modal) closeModal(); });
     document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
+
+    // Render pinned ad if exists
+    const pinnedAd = localStorage.getItem("nb_pinned_ad");
+    const pinnedSlot = document.getElementById("pinned-ad-slot");
+    if(pinnedAd){
+      pinnedSlot.style.display = "block";
+      pinnedSlot.innerHTML = pinnedAd;
+      pinnedSlot.addEventListener("click", ()=>{
+        NB_OPEN_MODAL(pinnedAd);
+      });
+    }
   </script>
 </body>
 </html>
