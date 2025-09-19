@@ -1,6 +1,7 @@
 /* Full app.js — copy-paste entire file to js/app.js
-   Robust version: uses existing #nb-modal if present, populates categories,
-   exposes renderHomeGrid and renderProductsPage globally so index.html can call them.
+   Updated:
+   - Filters (category + price) fixed
+   - View/Contact → redirect to product.html?id=xxxx
 */
 
 (function(){
@@ -17,9 +18,6 @@
 
   // Products fetch/save helpers
   function getProducts(){
-    if(typeof window.NB_GET_PRODUCTS === 'function'){
-      try { return window.NB_GET_PRODUCTS() || []; } catch(e) { /* fallback */ }
-    }
     try {
       const raw = localStorage.getItem(key);
       if(raw) return JSON.parse(raw);
@@ -27,9 +25,6 @@
     return window.NB_PRODUCTS || [];
   }
   function saveProducts(list){
-    if(typeof window.NB_SAVE_PRODUCTS === 'function'){
-      try { window.NB_SAVE_PRODUCTS(list); return; } catch(e) {}
-    }
     try { localStorage.setItem(key, JSON.stringify(list)); } catch(e){}
   }
 
@@ -74,69 +69,14 @@
       const list = getProducts().slice();
       const updated = list.filter(p => p.id !== id);
       saveProducts(updated);
-      // refresh
       renderHomeGrid();
       renderProductsPage();
     }catch(e){ console.warn(e); }
   }
 
-  // Modal: prefer built-in #nb-modal, else use overlay
-  function showModalHtml(html){
-    const builtin = el('#nb-modal');
-    if(builtin && builtin.querySelector('#nb-modal-body')){
-      const body = builtin.querySelector('#nb-modal-body');
-      body.innerHTML = html;
-      builtin.style.display = 'flex';
-
-      // close handlers
-      const closeBtn = builtin.querySelector('.nb-modal-close');
-      if(closeBtn) closeBtn.onclick = ()=> { builtin.style.display='none'; body.innerHTML=''; };
-      builtin.onclick = (ev)=> { if(ev.target === builtin){ builtin.style.display='none'; body.innerHTML=''; } };
-      const esc = (ev)=> { if(ev.key === 'Escape'){ builtin.style.display='none'; body.innerHTML=''; document.removeEventListener('keydown', esc); } };
-      document.addEventListener('keydown', esc);
-      return;
-    }
-
-    // fallback overlay
-    const existing = el('.nb-modal-overlay'); if(existing) existing.remove();
-    const overlay = document.createElement('div'); overlay.className = 'nb-modal-overlay';
-    overlay.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;';
-    const box = document.createElement('div'); box.className = 'nb-modal';
-    box.style = 'max-width:720px;width:90%;background:#071027;color:#fff;padding:18px;border-radius:12px;position:relative;border:1px solid rgba(255,255,255,0.06);';
-    box.innerHTML = `<button class="nb-modal-close" aria-label="Close" style="position:absolute;right:10px;top:10px;background:transparent;border:0;color:inherit;font-size:20px;">✕</button><div class="nb-modal-body-inner">${html}</div>`;
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-    box.querySelector('.nb-modal-close').addEventListener('click', ()=> overlay.remove());
-    overlay.addEventListener('click', (ev)=> { if(ev.target === overlay) overlay.remove(); });
-    const escRemove = (ev)=> { if(ev.key === 'Escape'){ overlay.remove(); document.removeEventListener('keydown', escRemove); } };
-    document.addEventListener('keydown', escRemove);
-  }
-
-  function openProductModal(product, contactOnly){
-    const contactHtml = `
-      <h3>Contact Seller</h3>
-      <p><strong>Item:</strong> ${escapeHtml(product.title)}</p>
-      <p><strong>Phone/Email:</strong> ${escapeHtml(product.contact||'')}</p>
-      <div style="margin-top:12px"><a class="btn btn-primary" href="mailto:${encodeURIComponent(product.contact)}?subject=${encodeURIComponent('Interested in '+product.title)}">Email Seller</a></div>
-    `;
-    const detailsHtml = `
-      <div style="display:flex;gap:16px;flex-wrap:wrap;">
-        <div style="flex:0 0 220px;"><img src="${escapeHtml((product.images&&product.images[0])?product.images[0]:'assets/images/placeholder.jpg')}" style="width:220px;height:150px;object-fit:cover;border-radius:6px;" onerror="this.src='assets/images/placeholder.jpg'"/></div>
-        <div style="flex:1;min-width:200px;">
-          <h2 style="margin:0 0 6px 0">${escapeHtml(product.title)}</h2>
-          <div style="margin-bottom:6px;font-weight:600;">${(Number(product.price)===0)?'FREE':(product.currency||'Rs.') + ' ' + numberWithCommas(product.price)}</div>
-          <div class="muted small">Location: ${escapeHtml(product.location||'')}</div>
-          <div class="muted small">Seller: ${escapeHtml(product.seller||'')}</div>
-          <hr style="opacity:0.06;margin:8px 0">
-          <p style="max-height:160px;overflow:auto;margin:0;padding-right:6px">${escapeHtml(product.description||'')}</p>
-          <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
-            <a class="btn" href="mailto:${encodeURIComponent(product.contact)}?subject=${encodeURIComponent('Interested in '+product.title)}">Contact Seller</a>
-            <a class="btn" href="https://www.google.com" target="_blank">Open Link</a>
-          </div>
-        </div>
-      </div>
-    `;
-    showModalHtml(contactOnly ? contactHtml : detailsHtml);
+  // redirect to product page
+  function openProductPage(productId){
+    window.location.href = `product.html?id=${encodeURIComponent(productId)}`;
   }
 
   // Search helpers
@@ -189,22 +129,11 @@
       grid.appendChild(card);
     });
 
-    // attach events via delegation for robustness
-    // (we prefer per-card listeners to avoid duplication; ensure we clear previous)
-    // but since cards are recreated we can add per-card handlers now:
     grid.querySelectorAll('.view-btn').forEach(btn=>{
-      btn.addEventListener('click', (e)=> {
-        const id = btn.dataset.id;
-        const prod = getProducts().find(x=>x.id === id);
-        if(prod) openProductModal(prod, false);
-      });
+      btn.addEventListener('click', ()=> openProductPage(btn.dataset.id));
     });
     grid.querySelectorAll('.contact-btn').forEach(btn=>{
-      btn.addEventListener('click', (e)=> {
-        const id = btn.dataset.id;
-        const prod = getProducts().find(x=>x.id === id);
-        if(prod) openProductModal(prod, true);
-      });
+      btn.addEventListener('click', ()=> openProductPage(btn.dataset.id));
     });
   }
 
@@ -232,20 +161,11 @@
       grid.appendChild(card);
     });
 
-    // attach card handlers
     grid.querySelectorAll('.view-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=> {
-        const id = btn.dataset.id;
-        const prod = getProducts().find(x=>x.id === id);
-        if(prod) openProductModal(prod, false);
-      });
+      btn.addEventListener('click', ()=> openProductPage(btn.dataset.id));
     });
     grid.querySelectorAll('.contact-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=> {
-        const id = btn.dataset.id;
-        const prod = getProducts().find(x=>x.id === id);
-        if(prod) openProductModal(prod, true);
-      });
+      btn.addEventListener('click', ()=> openProductPage(btn.dataset.id));
     });
   }
 
@@ -266,15 +186,6 @@
   function initSellForm(){
     const form = el('#sell-form') || el('form#sell'); if(!form) return;
 
-    // provide province select if page used different elements
-    try{
-      const provinceEl = form.querySelector('#province');
-      if(!provinceEl){
-        // nothing to do, sell.html already has province/city in your template
-      }
-    } catch(e){}
-
-    // phone input enforced digits only
     const phoneInput = form.querySelector('[name="contact"]');
     if(phoneInput){
       phoneInput.setAttribute('placeholder','10 digit phone number');
@@ -327,40 +238,19 @@
 
   // Initialization
   document.addEventListener('DOMContentLoaded', function(){
-    // renderers should be exposed to window so index.html/clicks can call them
     window.renderHomeGrid = renderHomeGrid;
     window.renderProductsPage = renderProductsPage;
 
-    // populate site name
     els('.site-name').forEach(n => { if(n.tagName === 'INPUT') n.value = window.SITE_NAME || 'NEPALI BAZAR'; else n.textContent = window.SITE_NAME || 'NEPALI BAZAR'; });
 
-    // run initializers
     initAds();
     initCategories();
     initGlobalSearch();
     prefillSearchFromQuery();
     initSellForm();
 
-    // render UIs
     renderHomeGrid();
     renderProductsPage();
-
-    // listen for global clicks (fallback) — ensure view/contact buttons open modal even if added by other code
-    document.body.addEventListener('click', function(ev){
-      const t = ev.target;
-      if(!t) return;
-      if(t.matches && t.matches('.view-btn')){
-        const id = t.getAttribute('data-id');
-        const prod = getProducts().find(x => x.id === id);
-        if(prod) openProductModal(prod, false);
-      }
-      if(t.matches && t.matches('.contact-btn')){
-        const id = t.getAttribute('data-id');
-        const prod = getProducts().find(x => x.id === id);
-        if(prod) openProductModal(prod, true);
-      }
-    });
-
   });
 
 })();
