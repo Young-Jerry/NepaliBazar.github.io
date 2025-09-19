@@ -59,25 +59,26 @@
     </div>
   </section>
 
-  <!-- Main area -->
+  <!-- Trending Section -->
+  <section class="section trending">
+    <div class="section-head">
+      <h2>Trending</h2>
+      <button id="pin-ad-btn" class="btn btn-sm" style="display:none;">Pin Ad</button>
+    </div>
+    <div class="trending-wrapper">
+      <button class="arrow left" id="trending-left">&#8249;</button>
+      <div class="trending-scroll" id="trending-scroll"></div>
+      <button class="arrow right" id="trending-right">&#8250;</button>
+    </div>
+  </section>
+
+  <!-- All Listings -->
   <main class="container main-grid">
     <section class="content">
       <div class="section-head">
-        <h2>Latest Listings</h2>
-        <div class="controls">
-          <select id="filter-category" class="select"></select>
-          <select id="sort-by" class="select">
-            <option value="new">Newest</option>
-            <option value="price-asc">Price: Low → High</option>
-            <option value="price-desc">Price: High → Low</option>
-          </select>
-        </div>
+        <h2>All Listings</h2>
       </div>
-
       <div id="home-grid" class="card-grid"></div>
-      <div id="load-more" class="load-more-wrap">
-        <button id="load-more-btn" class="btn">Load more</button>
-      </div>
     </section>
 
     <aside class="sidebar">
@@ -119,11 +120,17 @@
     const userInfo = document.getElementById("user-info");
     const usernameDisplay = document.getElementById("username-display");
     const logoutBtn = document.getElementById("logout-btn");
+    const pinBtn = document.getElementById("pin-ad-btn");
 
     if(loggedUser){
       loginLink.style.display = "none";
       userInfo.style.display = "inline";
       usernameDisplay.textContent = loggedUser;
+
+      // Only show pin button to admin
+      if(loggedUser === "sohaum") {
+        pinBtn.style.display = "inline-block";
+      }
     } else {
       loginLink.style.display = "inline";
       userInfo.style.display = "none";
@@ -135,7 +142,37 @@
       location.reload();
     });
 
-    // --- Product rendering on home page ---
+    // --- TRENDING (Pinned Ads) ---
+    const trendingScroll = document.getElementById("trending-scroll");
+    const pinnedProducts = (window.NB_PRODUCTS || []).filter(p => p.pinned).slice(0,10);
+
+    function renderTrending() {
+      trendingScroll.innerHTML = "";
+      pinnedProducts.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "trending-card";
+        card.innerHTML = `
+          <img src="${p.images?.[0] || 'assets/images/placeholder.jpg'}" alt="">
+          <div class="info">
+            <h4>${p.title}</h4>
+            <p>Rs. ${p.price}</p>
+          </div>
+        `;
+        trendingScroll.appendChild(card);
+      });
+    }
+
+    renderTrending();
+
+    // Arrows scroll
+    document.getElementById("trending-left").onclick = () => {
+      trendingScroll.scrollBy({ left: -300, behavior: "smooth" });
+    };
+    document.getElementById("trending-right").onclick = () => {
+      trendingScroll.scrollBy({ left: 300, behavior: "smooth" });
+    };
+
+    // --- All Listings ---
     let products = window.NB_PRODUCTS || [];
     const homeGrid = document.getElementById("home-grid");
 
