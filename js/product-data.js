@@ -45,8 +45,10 @@
     }
   ];
 
-  // localStorage key
+  // storage keys
   const key = window.LOCAL_STORAGE_KEY || "nb_products_v1";
+  const pinKey = "nb_pinned_ad";
+
   let products = [];
 
   // helper: remove expired ads
@@ -58,6 +60,7 @@
     });
   }
 
+  // Load from storage
   try {
     const raw = localStorage.getItem(key);
     if (raw) products = JSON.parse(raw);
@@ -65,24 +68,22 @@
     console.warn("Failed reading local products", e);
   }
 
-  // if empty, initialize
+  // If none, initialize with sample
   if (!products || !Array.isArray(products) || products.length === 0) {
     products = initial;
     try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
   }
 
-  // always clean expired ads
+  // Always clean expired ads
   products = filterExpired(products);
   try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
 
-  // function to save current array to localStorage
+  // Save products to storage
   function saveProducts() {
-    try { 
-      localStorage.setItem(key, JSON.stringify(products)); 
-    } catch(e){}
+    try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
   }
 
-  // refresh products from localStorage
+  // Refresh products
   function getProducts() {
     try {
       const raw = localStorage.getItem(key);
@@ -96,14 +97,41 @@
     return products;
   }
 
-  // generate new unique ID
+  // Generate new ID
   function generateId() {
     return "p-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
   }
 
-  // global helpers
+  // --- PINNED AD FUNCTIONS ---
+  function getPinnedAd() {
+    try {
+      const raw = localStorage.getItem(pinKey);
+      if (raw) return JSON.parse(raw);
+    } catch(e){
+      console.warn("Failed to read pinned ad", e);
+    }
+    return null;
+  }
+
+  function setPinnedAd(product) {
+    try {
+      localStorage.setItem(pinKey, JSON.stringify(product));
+    } catch(e){}
+  }
+
+  function clearPinnedAd() {
+    try {
+      localStorage.removeItem(pinKey);
+    } catch(e){}
+  }
+
+  // Expose globally
   window.NB_PRODUCTS = products;
   window.NB_SAVE_PRODUCTS = saveProducts;
   window.NB_GENERATE_ID = generateId;
   window.NB_GET_PRODUCTS = getProducts;
+
+  window.NB_GET_PINNED = getPinnedAd;
+  window.NB_SET_PINNED = setPinnedAd;
+  window.NB_CLEAR_PINNED = clearPinnedAd;
 })();
