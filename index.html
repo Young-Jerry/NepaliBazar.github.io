@@ -54,8 +54,7 @@
       </div>
 
       <div class="hero-right">
-        <!-- Featured / pinned ad (dynamic) -->
-        <div id="pinned-ad"></div>
+        <!-- Pinned ad dynamically injected here by app.js -->
       </div>
     </div>
   </section>
@@ -66,7 +65,7 @@
       <div class="section-head">
         <h2>Latest Listings</h2>
         <div class="controls">
-          <select id="filter-cat" class="select"></select>
+          <select id="filter-category" class="select"></select>
           <select id="sort-by" class="select">
             <option value="new">Newest</option>
             <option value="price-asc">Price: Low → High</option>
@@ -76,7 +75,9 @@
       </div>
 
       <div id="home-grid" class="card-grid"></div>
-      <div id="load-more" class="load-more-wrap"><button id="load-more-btn" class="btn">Load more</button></div>
+      <div id="load-more" class="load-more-wrap">
+        <button id="load-more-btn" class="btn">Load more</button>
+      </div>
     </section>
 
     <aside class="sidebar">
