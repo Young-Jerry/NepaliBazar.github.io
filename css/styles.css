@@ -262,3 +262,27 @@ a,p,li,label,input,select,textarea,.muted,.title,.meta,.brand-sub{color:#e6f0ff}
 }
 .trending-wrapper .arrow.left { left: -10px; }
 .trending-wrapper .arrow.right { right: -10px; }
+
+
+/* --- Hero banner --- */
+.hero{max-width:var(--maxwidth);margin:18px auto;padding:18px;border-radius:12px;background:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));display:flex;align-items:center;gap:16px;border:1px solid rgba(255,255,255,0.04)}
+.hero-inner{display:flex;align-items:center;gap:12px}
+.hero-logo{width:84px;height:84px;object-fit:cover;border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.04)}
+.hero-text h1{margin:0;font-size:20px;color:var(--accent-2);}
+.hero-text p{margin:0;color:var(--muted)}
+
+/* --- Left collapsible sidebar --- */
+.left-toggle{position:fixed;left:12px;top:16px;z-index:1200;background:var(--glass);border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04);backdrop-filter: blur(4px)}
+.leftbar{position:fixed;left:0;top:0;bottom:0;width:240px;transform:translateX(-260px);transition:transform .22s ease;z-index:1100;padding:18px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));box-shadow:8px 0 40px rgba(0,0,0,0.6);overflow:auto}
+.leftbar nav a{display:block;padding:10px 6px;border-radius:8px;margin-bottom:6px;color:white;text-decoration:none;font-weight:600}
+.leftbar .left-close{position:absolute;right:8px;top:8px;background:transparent;border:none;color:var(--muted);font-size:18px}
+body.left-open .leftbar{transform:translateX(0);}
+body.left-open{padding-left:240px;transition:padding-left .22s ease}
+
+/* Trending adjustments: fix width and horizontal scrolling */
+.trending {min-width:260px;max-width:360px;overflow-x:hidden}
+.trending-scroll{display:flex;gap:10px;overflow-x:auto;padding:8px}
+.trending-card{min-width:160px;flex:0 0 160px}
+
+/* ensure pinned badge stacks to left-top */
+.card .thumb div[style*='📌']{left:8px;top:8px}
