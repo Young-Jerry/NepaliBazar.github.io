@@ -109,18 +109,17 @@
     return !!(u && u.role === 'admin');
   }
 
-  // ---------- Pin helpers (only one pinned allowed) ----------
-  function getPinnedProductRaw(){
+  // ---------- Pin helpers (allow multiple pinned products) ----------
+  function getPinnedProducts(){
     const raw = getProductsRaw();
-    return (raw||[]).find(p => p && p.pinned === true) || null;
+    return (raw||[]).filter(p => p && p.pinned === true) || [];
   }
   function pinProduct(id){
     const users = readJSON(USERS_KEY, []);
     const current = getCurrentUser();
     if(!current || !isAdmin()) { alert('Only admin can pin ads'); return; }
     const list = getProductsRaw();
-    // unpin others
-    list.forEach(p => p.pinned = false);
+    // allow multiple pins (do not unpin other ads)
     const found = list.find(p => p.id === id);
     if(!found) { alert('Listing not found'); return; }
     found.pinned = true;
@@ -537,7 +536,7 @@
     if(q){ const ql = q.toLowerCase(); list = list.filter(p => (((p.title||'') + ' ' + (p.description||'') + ' ' + (p.seller||'') + ' ' + (p.location||'')).toLowerCase().includes(ql))); }
     if(cat) list = list.filter(p => p.category === cat);
 
-    list.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    list.sort((a,b) => { if((a.pinned?1:0) !== (b.pinned?1:0)) return (b.pinned?1:0) - (a.pinned?1:0); return new Date(b.createdAt || 0) - new Date(a.createdAt || 0); });
 
     grid.innerHTML = '';
     if(list.length === 0){ grid.innerHTML = '<div class="muted">No listings found.</div>'; return; }
