@@ -147,12 +147,11 @@
     const priceDisplay = (Number(product.price) === 0) ? 'FREE' : (product.currency || 'Rs.') + ' ' + numberWithCommas(product.price);
     const created = product.createdAt || '';
     const expires = product.expiryDate || '';
-    const pinnedBadge = product.pinned ? `<span title="Pinned">📌</span>` : '';
-
+    const pinnedBadge = '';
     card.innerHTML = `
       <div class="thumb" style="position:relative;">
         <img src="${escapeHtml(img)}" alt="${escapeHtml(product.title)}" onerror="this.src='assets/images/placeholder.jpg'"/>
-        ${product.pinned ? `<div style="position:absolute;left:8px;top:8px;background:rgba(0,0,0,0.45);padding:6px;border-radius:8px;">📌</div>` : ''}
+        
       </div>
       <div class="title">${escapeHtml(product.title)} ${pinnedBadge}</div>
       <div class="meta"><div class="price">${priceDisplay}</div><div class="muted small">${escapeHtml(product.location||'')}</div></div>
@@ -257,12 +256,27 @@
   }
 
   function buildModalHtml(product){
-    const created = product.createdAt || '';
-    const expires = product.expiryDate || '';
-    const img = (product.images && product.images[0]) ? product.images[0] : 'assets/images/placeholder.jpg';
-    return `
-      <div style="display:flex;gap:16px;flex-wrap:wrap;">
-        <div style="flex:0 0 320px;"><img src="${escapeHtml(img)}" style="width:320px;height:220px;object-fit:cover;border-radius:8px;" onerror="this.src='assets/images/placeholder.jpg'"/></div>
+  // rich modal layout
+  const imgs = (product.images||[]).map(i=>`<img src="${escapeHtml(i)}" onerror="this.src='assets/images/placeholder.jpg'"/>`).join('') || `<img src='assets/images/placeholder.jpg'/>`;
+  return `
+    <div class="nb-modal-card">
+      <div class="nb-modal-left">
+        <div class="modal-images">${imgs}</div>
+      </div>
+      <div class="nb-modal-right">
+        <h2 class="modal-title">${escapeHtml(product.title||'Untitled')}</h2>
+        <div class="modal-price">${product.currency||'Rs.'} ${numberWithCommas(product.price||0)}</div>
+        <div class="modal-meta">Seller: ${escapeHtml(product.seller||'—')} · ${escapeHtml(product.location||'—')}</div>
+        <p class="modal-desc">${escapeHtml(product.description||'No description provided.')}</p>
+        <div class="modal-actions">
+          <button class="btn contact-btn">Contact Seller</button>
+          ${isAdmin() ? `<button class="btn pin-btn">${product.pinned? 'Unpin':'Pin'}</button>` : ''}
+          ${canDelete(product) ? `<button class="btn delete-btn">Delete</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}" style="width:320px;height:220px;object-fit:cover;border-radius:8px;" onerror="this.src='assets/images/placeholder.jpg'"/></div>
         <div style="flex:1;min-width:220px;">
           <h2 style="margin:0 0 8px 0">${escapeHtml(product.title)}</h2>
           <div style="font-weight:700;margin-bottom:8px;">${(Number(product.price)===0)?'FREE':(product.currency||'Rs.') + ' ' + numberWithCommas(product.price)}</div>
@@ -661,3 +675,41 @@
 
   // ---------- END ----------
 })();
+
+
+
+// ---------- Trending area renderer (pinned items) ----------
+function renderTrendingArea(){
+  const container = document.querySelector('.trending-scroll') || document.getElementById('trending-scroll') || null;
+  if(!container) return;
+  container.innerHTML = '';
+  const pinned = (getProductsRaw()||[]).filter(p => p && p.pinned);
+  if(pinned.length === 0){
+    container.innerHTML = '<div class="muted">No trending items yet.</div>';
+    return;
+  }
+  pinned.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'trending-card pinned-card';
+    card.innerHTML = `
+      <div class="trending-thumb"><img src="${escapeHtml((p.images&&p.images[0])?p.images[0]:'assets/images/placeholder.jpg')}" alt="${escapeHtml(p.title)}" onerror="this.src='assets/images/placeholder.jpg'"/></div>
+      <div class="trending-body">
+        <div class="t-title">${escapeHtml(p.title)}</div>
+        <div class="t-price">${p.currency||'Rs.'} ${numberWithCommas(p.price||0)}</div>
+        <div class="t-meta">Posted by ${escapeHtml(p.seller||'—')} · ${escapeHtml((p.location||'').toString())}</div>
+      </div>
+      <div class="t-actions">
+        <button class="btn view-btn" data-id="${p.id}">View</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  // attach view handlers
+  container.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = btn.dataset.id;
+      const prod = getProductsRaw().find(x => x.id === id);
+      if(prod) showModal(buildModalHtml(prod));
+    });
+  });
+}
