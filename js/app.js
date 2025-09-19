@@ -1,12 +1,13 @@
 /* Full app.js — paste whole file to js/app.js
-   Features:
+   All demands implemented:
    - expiryDate support (max 7 days). Required on publish.
    - expired ads auto-filtered and removed from listing views.
-   - removed price-high/low filter; sorting is by newest (createdAt).
+   - sort by newest (createdAt). Price sort removed.
    - "View" and "Contact" open an in-page informational modal (final popup) with only close X.
-   - profile support: sohaum = admin (delete anywhere); other users delete only their own items in profile.
-   - injects Profile link when logged in.
-   - ad hover animation (JS driven).
+   - profile support: sohaum = admin (delete anywhere); normal users delete only own items from profile.
+   - admin pin/unpin exactly ONE ad; pinned ad shown in hero (with pin icon) and clickable to open its modal.
+   - createdAt stored and shown as YYYY-MM-DD HH:mm (24h).
+   - ad hover animation (JS-driven).
    - exposes renderHomeGrid, renderProductsPage, renderProfilePage globally.
 */
 
@@ -19,11 +20,33 @@
   const els = sel => Array.from(document.querySelectorAll(sel));
   const isProfilePage = () => /profile\.html$/i.test(window.location.pathname) || !!el('#profile-page');
 
+  // Helpers
   function escapeHtml(s) { return s ? String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]) : ''; }
   function numberWithCommas(x) { try { return Number(x).toLocaleString('en-IN'); } catch (e) { return x; } }
   function getCurrentUser() { try { return localStorage.getItem('nb_logged_in_user') || null; } catch (e) { return null; } }
 
-  // --- Products helpers (reads from localStorage; auto-filters expired ads)
+  function nowIsoDateTime() {
+    // returns YYYY-MM-DD HH:mm (local time)
+    const d = new Date();
+    const Y = d.getFullYear();
+    const M = String(d.getMonth() + 1).padStart(2, '0');
+    const D = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${Y}-${M}-${D} ${h}:${m}`;
+  }
+
+  function parseDateOnly(dateStr) {
+    // accepts YYYY-MM-DD or ISO; returns Date at local midnight
+    try {
+      const parts = dateStr.split('T')[0].split(' ')[0];
+      return new Date(parts + 'T00:00:00');
+    } catch (e) {
+      return new Date(dateStr);
+    }
+  }
+
+  // Products helpers (raw read/write)
   function getProductsRaw() {
     try {
       const raw = localStorage.getItem(KEY);
@@ -33,39 +56,83 @@
     return [];
   }
 
-  function getProducts() {
-    // filter expired (expiryDate inclusive). Also normalize date comparisons by using YYYY-MM-DD or Date
-    const today = new Date();
-    const raw = getProductsRaw();
-    const filtered = raw.filter(p => {
-      if (!p) return false;
-      if (!p.expiryDate) return true; // no expiry => keep
-      try {
-        const exp = new Date(p.expiryDate);
-        // If exp day ends at 23:59:59 local time, allow items through that day. Compare using date midnight.
-        // We treat exp >= today (i.e. not expired) as keep.
-        return exp >= new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      } catch (e) { return true; }
-    });
-    return filtered;
-  }
-
   function saveProducts(list) {
     try {
       localStorage.setItem(KEY, JSON.stringify(list));
     } catch (e) { console.warn('Failed save products', e); }
   }
 
+  // getProducts filters out expired ads automatically
+  function getProducts() {
+    const today = new Date();
+    const raw = getProductsRaw();
+    return raw.filter(p => {
+      if (!p) return false;
+      if (!p.expiryDate) return true;
+      try {
+        const exp = parseDateOnly(p.expiryDate);
+        // Keep if expiry date >= today's date (midnight)
+        const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        return exp >= todayMid;
+      } catch (e) {
+        return true;
+      }
+    });
+  }
+
+  // utility to find pinned product (there should be at most one)
+  function getPinnedProduct() {
+    const raw = getProductsRaw();
+    return raw.find(p => p && p.pinned === true) || null;
+  }
+
   function canDeleteProduct(product) {
     const user = getCurrentUser();
     if (!user) return false;
     if (user === 'sohaum') return true; // admin
-    // normal user: can delete own product only on their profile page
+    // normal users can delete only own product and only from profile page
     if (product && product.seller === user && isProfilePage()) return true;
     return false;
   }
 
-  // --- Create product card DOM
+  // Pin/unpin helpers (admin only)
+  function pinProductById(id) {
+    const user = getCurrentUser();
+    if (user !== 'sohaum') return alert('Only admin can pin ads.');
+    const list = getProductsRaw();
+    const found = list.find(p => p.id === id);
+    if (!found) return alert('Listing not found');
+    // unpin any existing
+    for (const p of list) { if (p.pinned) p.pinned = false; }
+    // pin this one
+    found.pinned = true;
+    found.pinnedBy = user;
+    found.pinnedAt = new Date().toISOString();
+    saveProducts(list);
+    renderPinnedHero();
+    // rerender grids to reflect pin icon
+    renderHomeGrid();
+    renderProductsPage();
+    renderProfilePage();
+  }
+
+  function unpinProductById(id) {
+    const user = getCurrentUser();
+    if (user !== 'sohaum') return alert('Only admin can unpin ads.');
+    const list = getProductsRaw();
+    const found = list.find(p => p.id === id);
+    if (!found) return alert('Listing not found');
+    found.pinned = false;
+    delete found.pinnedBy;
+    delete found.pinnedAt;
+    saveProducts(list);
+    renderPinnedHero();
+    renderHomeGrid();
+    renderProductsPage();
+    renderProfilePage();
+  }
+
+  // --- Create product card DOM (adds pin/unpin and delete controls depending on permissions)
   function createCard(product) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -74,9 +141,15 @@
     const posted = product.createdAt || '';
     const expires = product.expiryDate || '';
 
+    // pin icon on card if pinned
+    const pinnedHtml = product.pinned ? `<span title="Pinned" style="display:inline-block;margin-left:6px;color:var(--accent);font-weight:800">📌</span>` : '';
+
     card.innerHTML = `
-      <div class="thumb"><img src="${escapeHtml(img)}" alt="${escapeHtml(product.title)}" onerror="this.src='assets/images/placeholder.jpg'"/></div>
-      <div class="title">${escapeHtml(product.title)}</div>
+      <div class="thumb" style="position:relative;">
+        <img src="${escapeHtml(img)}" alt="${escapeHtml(product.title)}" onerror="this.src='assets/images/placeholder.jpg'"/>
+        ${product.pinned ? '<div style="position:absolute;left:8px;top:8px;background:rgba(0,0,0,0.45);padding:6px;border-radius:8px;">📌 Pinned</div>' : ''}
+      </div>
+      <div class="title">${escapeHtml(product.title)} ${pinnedHtml}</div>
       <div class="meta"><div class="price">${priceDisplay}</div><div class="muted small">${escapeHtml(product.location||'')}</div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
         <div style="display:flex;flex-direction:column">
@@ -89,9 +162,26 @@
             ${expires ? `<span style="margin-left:8px">Expires: ${escapeHtml(expires)}</span>` : ''}
           </div>
         </div>
-        <div class="card-right"></div>
+        <div class="card-right" style="display:flex;gap:8px;align-items:center"></div>
       </div>
     `;
+
+    const right = card.querySelector('.card-right');
+
+    // admin pin/unpin control
+    const currentUser = getCurrentUser();
+    if (currentUser === 'sohaum') {
+      const pinBtn = document.createElement('button');
+      pinBtn.className = 'btn';
+      pinBtn.textContent = product.pinned ? 'Unpin' : 'Pin';
+      pinBtn.title = product.pinned ? 'Unpin this ad from hero' : 'Pin this ad to hero';
+      pinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (product.pinned) unpinProductById(product.id);
+        else pinProductById(product.id);
+      });
+      right.appendChild(pinBtn);
+    }
 
     // delete button if authorized
     if (canDeleteProduct(product)) {
@@ -103,29 +193,43 @@
         if (!confirm('Delete listing?')) return;
         deleteProductById(product.id);
       });
-      const right = card.querySelector('.card-right');
-      if (right) right.appendChild(del);
+      right.appendChild(del);
     }
 
     // attach id dataset on top-level for delegation convenience
     card.setAttribute('data-id', product.id);
+
+    // add hover effect on card (JS fallback)
+    card.style.transition = 'transform .18s ease, box-shadow .18s ease';
+    card.addEventListener('mouseenter', () => {
+      card.style.transform = 'translateY(-6px)';
+      card.style.boxShadow = '0 18px 60px rgba(0,0,0,0.6)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+      card.style.boxShadow = '';
+    });
+
     return card;
   }
 
   function deleteProductById(id) {
-    const list = getProductsRaw();
+    let list = getProductsRaw();
     const product = list.find(p => p.id === id);
     if (!product) return alert('Listing not found');
     if (!canDeleteProduct(product)) return alert('Not authorized to delete this listing.');
-    const updated = list.filter(p => p.id !== id);
-    saveProducts(updated);
+    list = list.filter(p => p.id !== id);
+    // if deleted one was pinned, remove pinned state
+    for (const p of list) { if (p.pinned && p.id === id) p.pinned = false; }
+    saveProducts(list);
     // rerender
+    renderPinnedHero();
     if (el('#home-grid')) renderHomeGrid();
     if (el('#products-grid')) renderProductsPage();
     if (el('#profile-listings')) renderProfilePage();
   }
 
-  // --- Modal (final popup) - only close X allowed inside content
+  // --- Modal (final informational popup) - only close X allowed inside content
   function showModalHtml(html) {
     const builtin = el('#nb-modal');
     if (builtin && builtin.querySelector('#nb-modal-body')) {
@@ -162,7 +266,7 @@
     const expires = product.expiryDate || '';
     return `
       <div style="display:flex;gap:16px;flex-wrap:wrap;">
-        <div style="flex:0 0 220px;"><img src="${escapeHtml((product.images&&product.images[0])?product.images[0]:'assets/images/placeholder.jpg')}" style="width:220px;height:150px;object-fit:cover;border-radius:6px;" onerror="this.src='assets/images/placeholder.jpg'"/></div>
+        <div style="flex:0 0 320px;"><img src="${escapeHtml((product.images&&product.images[0])?product.images[0]:'assets/images/placeholder.jpg')}" style="width:320px;height:220px;object-fit:cover;border-radius:6px;" onerror="this.src='assets/images/placeholder.jpg'"/></div>
         <div style="flex:1;min-width:200px;">
           <h2 style="margin:0 0 6px 0">${escapeHtml(product.title)}</h2>
           <div style="margin-bottom:6px;font-weight:600;">${(Number(product.price)===0)?'FREE':(product.currency||'Rs.') + ' ' + numberWithCommas(product.price)}</div>
@@ -179,7 +283,6 @@
   }
 
   function openProductModal(product, contactOnly) {
-    // contactOnly ignored because requirements say show same final popup (no extra buttons)
     const html = buildProductModalHtml(product);
     showModalHtml(html);
   }
@@ -304,7 +407,7 @@
       const today = new Date();
       const min = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const max = new Date(today.getTime() + MAX_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
-      const chosen = new Date(expiryDate);
+      const chosen = parseDateOnly(expiryDate);
       if (chosen < min || chosen > max) return alert(`Expiry date must be between today and ${MAX_EXPIRY_DAYS} days from today.`);
 
       const id = (window.NB_GENERATE_ID && typeof window.NB_GENERATE_ID === 'function') ? window.NB_GENERATE_ID() : ('p-' + Date.now() + '-' + Math.floor(Math.random() * 1000));
@@ -319,7 +422,7 @@
         contact,
         description: fd.get('description') || '',
         images: ['assets/images/placeholder.jpg'],
-        createdAt: new Date().toISOString().split('T')[0], // store YYYY-MM-DD
+        createdAt: nowIsoDateTime(), // store YYYY-MM-DD HH:mm
         expiryDate: expiryDate // YYYY-MM-DD
       };
 
@@ -374,6 +477,41 @@
     }
   }
 
+  // --- Render pinned hero (if pinned ad exists). If on profile page, hero hidden.
+  function renderPinnedHero() {
+    const hero = el('.hero');
+    if (!hero) return;
+    // if on profile page, hide hero
+    if (isProfilePage()) { hero.style.display = 'none'; return; }
+    const pinned = getPinnedProduct();
+    const right = hero.querySelector('.hero-right');
+    const left = hero.querySelector('.hero-left');
+    if (!right || !left) return;
+    if (!pinned) {
+      hero.style.display = ''; // show default hero
+      return;
+    }
+    // render pinned ad in hero-right
+    hero.style.display = '';
+    right.innerHTML = `
+      <div class="hero-card neon-card pinned-hero" style="cursor:pointer;position:relative;">
+        <div style="position:absolute;left:12px;top:12px;background:linear-gradient(90deg,var(--neon-1),var(--neon-2));color:#041026;padding:6px 8px;border-radius:10px;font-weight:700;display:flex;align-items:center;gap:8px;">
+          📌 Pinned
+        </div>
+        <img src="${escapeHtml((pinned.images&&pinned.images[0])?pinned.images[0]:'assets/images/placeholder.jpg')}" alt="${escapeHtml(pinned.title)}" style="width:100%;height:240px;object-fit:cover;border-radius:10px;" onerror="this.style.display='none'"/>
+        <div class="meta" style="margin-top:10px">${escapeHtml(pinned.title)} — ${(Number(pinned.price)===0)?'FREE':(pinned.currency||'Rs.')+' '+numberWithCommas(pinned.price)}</div>
+      </div>
+    `;
+    // clicking the pinned hero opens the final popup for that product
+    const heroCard = right.querySelector('.pinned-hero');
+    if (heroCard) {
+      heroCard.addEventListener('click', () => {
+        const prod = getProducts().find(x => x.id === pinned.id) || pinned;
+        if (prod) openProductModal(prod, false);
+      });
+    }
+  }
+
   // --- Renderers (no price sort; default newest first)
   function renderHomeGrid(limit = 8) {
     const grid = el('#home-grid'); if (!grid) return;
@@ -384,14 +522,18 @@
     const catVal = catSel ? catSel.value : '';
     if (catVal) list = list.filter(p => p.category === catVal);
 
-    // sort by createdAt descending (newest first)
-    list.sort((a, b) => (new Date(b.createdAt || 0)) - (new Date(a.createdAt || 0)));
+    // sort by createdAt descending (newest first) - parse date/time
+    list.sort((a, b) => {
+      const da = new Date(a.createdAt || 0);
+      const db = new Date(b.createdAt || 0);
+      return db - da;
+    });
 
     grid.innerHTML = '';
     const slice = list.slice(0, limit);
     slice.forEach(p => grid.appendChild(createCard(p)));
 
-    // attach events
+    // attach events (defensive)
     grid.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', (e) => {
       const id = btn.dataset.id;
       const prod = getProducts().find(x => x.id === id);
@@ -417,7 +559,7 @@
     if (cat) list = list.filter(p => p.category === cat);
 
     // newest first
-    list.sort((a, b) => (new Date(b.createdAt || 0)) - (new Date(a.createdAt || 0)));
+    list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     grid.innerHTML = '';
     if (list.length === 0) { grid.innerHTML = '<div class="muted">No listings found.</div>'; return; }
@@ -437,6 +579,9 @@
 
   function renderProfilePage() {
     const container = el('#profile-listings');
+    // hide hero for profile page
+    const hero = el('.hero');
+    if (hero) hero.style.display = 'none';
     if (!container) return;
     const user = getCurrentUser();
     if (!user) { window.location.href = 'login.html'; return; }
@@ -477,6 +622,7 @@
     initSellForm();
 
     // initial render
+    renderPinnedHero();
     renderHomeGrid();
     renderProductsPage();
     renderProfilePage();
@@ -497,5 +643,4 @@
       }
     });
   });
-
 })();
