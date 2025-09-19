@@ -2,6 +2,8 @@
    Updated:
    - Filters (category + price) fixed
    - View/Contact → redirect to product.html?id=xxxx
+   - createCard exposed globally for profile.html
+   - Delete button only for sohaum (admin)
 */
 
 (function(){
@@ -45,7 +47,7 @@
       </div>
     `;
 
-    // delete only for sohaum
+    // delete button only for admin (sohaum)
     const current = getCurrentUser();
     if(current === 'sohaum'){
       const del = document.createElement('button');
@@ -69,8 +71,8 @@
       const list = getProducts().slice();
       const updated = list.filter(p => p.id !== id);
       saveProducts(updated);
-      renderHomeGrid();
-      renderProductsPage();
+      if(window.renderHomeGrid) renderHomeGrid();
+      if(window.renderProductsPage) renderProductsPage();
     }catch(e){ console.warn(e); }
   }
 
@@ -240,6 +242,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     window.renderHomeGrid = renderHomeGrid;
     window.renderProductsPage = renderProductsPage;
+    window.createCard = createCard; // expose globally for profile.html
 
     els('.site-name').forEach(n => { if(n.tagName === 'INPUT') n.value = window.SITE_NAME || 'NEPALI BAZAR'; else n.textContent = window.SITE_NAME || 'NEPALI BAZAR'; });
 
