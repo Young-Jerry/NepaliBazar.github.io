@@ -40,6 +40,17 @@
     </div>
   </header>
 
+  <!-- Hero banner inserted by assistant -->
+  <section class="hero">
+    <div class="hero-inner">
+      <img src="assets/images/hero-1.jpg" alt="NepaliBazar logo" class="hero-logo"/>
+      <div class="hero-text">
+        <h1>NepaliBazaar — Local Market</h1>
+        <p>Buy, sell and connect with your local Nepali community — fresh, fast, and friendly.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- Left collapsible sidebar -->
   <div id="leftbar" class="leftbar">
     <button id="left-close" class="left-close">✕</button>
@@ -51,6 +62,7 @@
     </nav>
   </div>
   <button id="left-toggle" class="left-toggle">☰</button>
+
 
   <!-- Hero -->
   <section class="hero">
@@ -162,7 +174,7 @@
       trendingScroll.scrollBy({ left: 300, behavior: "smooth" });
     };
 
-    // ALL LISTINGS (exclude pinned)
+    // ALL LISTINGS
     let products = window.NB_PRODUCTS || [];
     const homeGrid = document.getElementById("home-grid");
 
@@ -173,7 +185,7 @@
 
     function renderHomeListings() {
       homeGrid.innerHTML = "";
-      products.filter(p => !p.pinned).forEach(product => {
+      products.forEach(product => {
         const card = document.createElement("div");
         card.className = "product-card";
         card.innerHTML = `
