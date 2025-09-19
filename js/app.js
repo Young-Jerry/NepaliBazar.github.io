@@ -7,7 +7,7 @@
   const STORAGE_KEY = window.LOCAL_STORAGE_KEY || 'nb_products_v1';
   const USERS_KEY = window.LOCAL_USERS_KEY || 'nb_users_v1';
   const MAX_EXPIRY_DAYS = 7;
-  const MAX_PRICE = 100000000;
+  const MAX_PRICE = 9999999999;
 
   // ---------- DOM helpers ----------
   const el = (s) => document.querySelector(s);
@@ -178,7 +178,7 @@
     if(isAdmin()){
       const pinBtn = document.createElement('button');
       pinBtn.className = 'btn';
-      pinBtn.innerText = product.pinned ? '📌 Unpin' : '📌 Pin';
+      pinBtn.innerText = product.pinned ? ' Unpin' : '📌 Pin';
       pinBtn.title = product.pinned ? 'Unpin ad' : 'Pin ad to hero';
       pinBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -713,3 +713,6 @@ function renderTrendingArea(){
     });
   });
 }
+
+renderTrendingArea();
+initTrendingControls && initTrendingControls();
