@@ -273,3 +273,7 @@ a, p, li, label, input, select, textarea, .muted, .title, .meta, .brand-sub { co
 }
 .trending-wrapper .arrow.left { left: -10px; }
 .trending-wrapper .arrow.right { right: -10px; }
+/* Center trending cards when they don't overflow */
+.trending-scroll {
+  justify-content: center;
+}
