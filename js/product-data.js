@@ -12,7 +12,8 @@
       contact: "9801234567",
       description: "Well maintained gaming laptop, 16GB RAM, RTX 2060, 512GB SSD.",
       images: ["assets/images/sample-1.jpg"],
-      createdAt: "2025-07-01"
+      createdAt: "2025-07-01",
+      expiryDate: "2025-07-08"
     },
     {
       id: "p-1002",
@@ -25,7 +26,8 @@
       contact: "9812345678",
       description: "Good condition, replaced tires recently.",
       images: ["assets/images/sample-2.jpg"],
-      createdAt: "2025-07-08"
+      createdAt: "2025-07-08",
+      expiryDate: "2025-07-15"
     },
     {
       id: "p-1003",
@@ -38,13 +40,23 @@
       contact: "campus@store.test",
       description: "Semester books: Engineering Mathematics, Physics, Mechanics",
       images: ["assets/images/sample-3.jpg"],
-      createdAt: "2025-06-22"
+      createdAt: "2025-06-22",
+      expiryDate: "2025-06-29"
     }
   ];
 
   // localStorage key
   const key = window.LOCAL_STORAGE_KEY || "nb_products_v1";
   let products = [];
+
+  // helper: remove expired ads
+  function filterExpired(list){
+    const today = new Date();
+    return list.filter(p => {
+      if (!p.expiryDate) return true;
+      return new Date(p.expiryDate) >= today;
+    });
+  }
 
   try {
     const raw = localStorage.getItem(key);
@@ -59,9 +71,15 @@
     try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
   }
 
+  // always clean expired ads
+  products = filterExpired(products);
+  try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
+
   // function to save current array to localStorage
   function saveProducts() {
-    try { localStorage.setItem(key, JSON.stringify(products)); } catch(e){}
+    try { 
+      localStorage.setItem(key, JSON.stringify(products)); 
+    } catch(e){}
   }
 
   // refresh products from localStorage
@@ -70,6 +88,7 @@
       const raw = localStorage.getItem(key);
       if (raw) {
         products = JSON.parse(raw);
+        products = filterExpired(products);
       }
     } catch(e){
       console.warn("Failed to reload products", e);
