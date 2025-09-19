@@ -118,9 +118,13 @@ body::before{
 .sidebar-card{padding:12px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
 
 /* Buttons */
-.btn{display:inline-block;padding:10px 14px;border-radius:10px;background:transparent;color:#e6f0ff;border:1px solid rgba(255,255,255,0.04);font-weight:700;cursor:pointer;text-decoration:none}
-.btn:hover{transform:translateY(-2px)}
+.btn{display:inline-block;padding:10px 14px;border-radius:10px;background:transparent;color:#e6f0ff;border:1px solid rgba(255,255,255,0.04);font-weight:700;cursor:pointer;text-decoration:none;transition:transform .18s ease, box-shadow .18s ease}
+.btn:hover{
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 12px var(--neon-1), 0 0 24px var(--neon-2);
+}
 .btn-primary{background:linear-gradient(90deg,var(--neon-1),var(--neon-2));color:#041026;border:none}
+.btn-primary:hover{background:linear-gradient(90deg,var(--neon-2),var(--neon-1))}
 .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
 
 /* Section head */
@@ -187,4 +191,3 @@ a, p, li, label, input, select, textarea, .muted, .title, .meta, .brand-sub { co
 
 /* small tweak for delete btn */
 .btn-danger { background: rgba(255,40,40,0.12); border:1px solid rgba(255,40,40,0.18); color:#ffb3b3; }
-
