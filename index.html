@@ -40,27 +40,6 @@
     </div>
   </header>
 
-  <!-- TRENDING CAROUSEL (Daraz/Amazon style) -->
-  <section id="trending-section" class="trending-section" aria-label="Trending items">
-    <div class="trending-wrap">
-      <button class="trending-arrow left" id="trending-left" aria-label="Scroll left">‹</button>
-      <div class="trending-scroll" id="trending-scroll" role="list"></div>
-      <button class="trending-arrow right" id="trending-right" aria-label="Scroll right">›</button>
-    </div>
-  </section>
-
-
-  <!-- Hero banner inserted by assistant -->
-  <section class="hero">
-    <div class="hero-inner">
-      <img src="assets/images/hero-1.jpg" alt="NepaliBazar logo" class="hero-logo"/>
-      <div class="hero-text">
-        <h1>NepaliBazaar — Local Market</h1>
-        <p>Buy, sell and connect with your local Nepali community — fresh, fast, and friendly.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- Left collapsible sidebar -->
   <div id="leftbar" class="leftbar">
     <button id="left-close" class="left-close">✕</button>
@@ -72,7 +51,6 @@
     </nav>
   </div>
   <button id="left-toggle" class="left-toggle">☰</button>
-
 
   <!-- Hero -->
   <section class="hero">
@@ -184,7 +162,7 @@
       trendingScroll.scrollBy({ left: 300, behavior: "smooth" });
     };
 
-    // ALL LISTINGS
+    // ALL LISTINGS (exclude pinned)
     let products = window.NB_PRODUCTS || [];
     const homeGrid = document.getElementById("home-grid");
 
@@ -195,7 +173,7 @@
 
     function renderHomeListings() {
       homeGrid.innerHTML = "";
-      products.forEach(product => {
+      products.filter(p => !p.pinned).forEach(product => {
         const card = document.createElement("div");
         card.className = "product-card";
         card.innerHTML = `
