@@ -89,6 +89,10 @@
           <input id="image-input" name="images" type="file" accept="image/*" multiple class="input" />
         </label>
 
+        <label>Expiry Date (max 7 days)
+          <input name="expiryDate" id="expiryDate" type="date" required class="input" />
+        </label>
+
         <div class="preview-area" id="image-preview"></div>
 
         <div class="form-actions">
@@ -167,6 +171,21 @@
           citySelect.appendChild(opt);
         });
       });
+
+      // --- Expiry date: limit to today → +7 days ---
+      const expiryInput = document.getElementById("expiryDate");
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth()+1).padStart(2,"0");
+      const dd = String(today.getDate()).padStart(2,"0");
+      const minDate = `${yyyy}-${mm}-${dd}`;
+      const maxDate = new Date(today);
+      maxDate.setDate(today.getDate() + 7);
+      const maxY = maxDate.getFullYear();
+      const maxM = String(maxDate.getMonth()+1).padStart(2,"0");
+      const maxD = String(maxDate.getDate()).padStart(2,"0");
+      expiryInput.min = minDate;
+      expiryInput.max = `${maxY}-${maxM}-${maxD}`;
 
       // Footer year + site name
       document.getElementById('year').textContent = new Date().getFullYear();
