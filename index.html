@@ -11,6 +11,7 @@
   <!-- Main CSS -->
   <link rel="stylesheet" href="css/styles.css">
 
+  <!-- Config + product seed -->
   <script src="js/config.js"></script>
   <script src="js/product-data.js"></script>
 </head>
@@ -39,13 +40,19 @@
     </div>
   </header>
 
-  <!-- Animated hero -->
+  <!-- Hero with pinned ad placeholder -->
   <section class="hero">
     <div class="hero-overlay"></div>
     <div class="container hero-inner">
       <div class="hero-left">
-        <h1 class="hero-title"><span class="accent site-name">NEPALI BAZAR</span><br>Buy • Sell • Connect — Locally</h1>
-        <p class="hero-sub">A neon-lit marketplace for students, workers & creators. Upload your item, add contact details and photos — buyers contact you directly.</p>
+        <h1 class="hero-title">
+          <span class="accent site-name">NEPALI BAZAR</span><br>
+          Buy • Sell • Connect — Locally
+        </h1>
+        <p class="hero-sub">
+          A neon-lit marketplace for students, workers & creators.
+          Upload your item, add contact details and photos — buyers contact you directly.
+        </p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="products.html">Browse Items</a>
           <a class="btn btn-ghost" href="sell.html">List an Item</a>
@@ -53,16 +60,13 @@
       </div>
 
       <div class="hero-right">
-        <!-- Featured / pinned ad -->
-        <div class="hero-card neon-card" id="pinned-ad">
-          <img src="assets/images/hero-1.jpg" alt="hero image" onerror="this.style.display='none'"/>
-          <div class="meta">Featured: Gaming Laptop — Rs. 85,000</div>
-        </div>
+        <!-- This gets filled dynamically by app.js (renderPinnedHero) -->
+        <div id="pinned-ad"></div>
       </div>
     </div>
   </section>
 
-  <!-- Main area: featured + grid -->
+  <!-- Main grid -->
   <main class="container main-grid">
     <section class="content">
       <div class="section-head">
@@ -78,7 +82,9 @@
       </div>
 
       <div id="home-grid" class="card-grid"></div>
-      <div id="load-more" class="load-more-wrap"><button id="load-more-btn" class="btn">Load more</button></div>
+      <div id="load-more" class="load-more-wrap">
+        <button id="load-more-btn" class="btn">Load more</button>
+      </div>
     </section>
 
     <aside class="sidebar">
@@ -92,7 +98,9 @@
 
       <div class="sidebar-card">
         <h3>Post quickly</h3>
-        <p class="muted">List your item in under a minute. Add photos & contact details so buyers can reach you directly.</p>
+        <p class="muted">
+          List your item in under a minute. Add photos & contact details so buyers can reach you directly.
+        </p>
         <a class="btn btn-primary" href="sell.html">Create Listing</a>
       </div>
     </aside>
@@ -101,24 +109,27 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>© <span id="year"></span> <span class="site-name"></span>. Made with ❤️ in Nepal.</div>
-      <div class="muted">Contact: <a href="mailto:help@nepalibazar.test">help@nepalibazar.test</a></div>
+      <div class="muted">
+        Contact: <a href="mailto:help@nepalibazar.test">help@nepalibazar.test</a>
+      </div>
     </div>
   </footer>
 
+  <!-- App logic -->
   <script src="js/app.js"></script>
-  <script>
-    // Year + branding
-    document.getElementById('year').textContent = new Date().getFullYear();
-    document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
-    // Logged-in state
+  <!-- Branding + login state only -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.querySelectorAll(".site-name").forEach(el => el.textContent = window.SITE_NAME || "NEPALI BAZAR");
+
     const loggedUser = localStorage.getItem("nb_logged_in_user");
     const loginLink = document.getElementById("login-link");
     const userInfo = document.getElementById("user-info");
     const usernameDisplay = document.getElementById("username-display");
     const logoutBtn = document.getElementById("logout-btn");
 
-    if(loggedUser){
+    if (loggedUser) {
       loginLink.style.display = "none";
       userInfo.style.display = "inline";
       usernameDisplay.textContent = loggedUser;
@@ -132,27 +143,6 @@
       localStorage.removeItem("nb_logged_in_user");
       location.reload();
     });
-
-    // --- Make the pinned ad clickable like a normal product ---
-    const pinnedAd = document.getElementById("pinned-ad");
-    if (pinnedAd) {
-      pinnedAd.addEventListener("click", () => {
-        const featuredProduct = {
-          title: "Gaming Laptop",
-          price: "85000",
-          seller: "Sohaum (Admin)",
-          location: "Kathmandu",
-          description: "High-performance gaming laptop with 16GB RAM, RTX graphics card, and SSD.",
-          images: ["assets/images/hero-1.jpg"]
-        };
-
-        if (window.openProductModal) {
-          window.openProductModal(featuredProduct);
-        } else {
-          alert("Gaming Laptop — Rs. 85,000\nSeller: Sohaum\nKathmandu");
-        }
-      });
-    }
   </script>
 
   <script src="js/nb-fixes.js"></script>
