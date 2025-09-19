@@ -40,6 +40,30 @@
     </div>
   </header>
 
+  <!-- Hero banner inserted by assistant -->
+  <section class="hero">
+    <div class="hero-inner">
+      <img src="assets/images/hero-1.jpg" alt="NepaliBazar logo" class="hero-logo"/>
+      <div class="hero-text">
+        <h1>NepaliBazaar — Local Market</h1>
+        <p>Buy, sell and connect with your local Nepali community — fresh, fast, and friendly.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Left collapsible sidebar -->
+  <div id="leftbar" class="leftbar">
+    <button id="left-close" class="left-close">✕</button>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="sell.html">Sell</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </div>
+  <button id="left-toggle" class="left-toggle">☰</button>
+
+
   <!-- Hero -->
   <section class="hero">
     <div class="hero-overlay"></div>
@@ -128,7 +152,7 @@
     const trendingScroll = document.getElementById("trending-scroll");
 
     function renderTrending() {
-      const pinnedProducts = (window.NB_PRODUCTS || []).filter(p => p.pinned).slice(0,10);
+      const pinnedProducts = (window.NB_PRODUCTS || []).filter(p => p.pinned);
       trendingScroll.innerHTML = "";
       pinnedProducts.forEach(p => {
         const card = document.createElement("div");
@@ -207,6 +231,20 @@
 
     renderHomeListings();
     renderTrending();
+  </script>
+  <script>
+    // Left sidebar toggle
+    (function(){
+      const left = document.getElementById('leftbar');
+      const toggle = document.getElementById('left-toggle');
+      const closeBtn = document.getElementById('left-close');
+      function openLeft(){ document.body.classList.add('left-open'); }
+      function closeLeft(){ document.body.classList.remove('left-open'); }
+      if(toggle) toggle.addEventListener('click', openLeft);
+      if(closeBtn) closeBtn.addEventListener('click', closeLeft);
+      // allow ESC to close
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLeft(); });
+    })();
   </script>
 </body>
 </html>
