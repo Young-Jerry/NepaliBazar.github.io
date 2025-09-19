@@ -286,3 +286,34 @@ body.left-open{padding-left:240px;transition:padding-left .22s ease}
 
 /* ensure pinned badge stacks to left-top */
 .card .thumb div[style*='📌']{left:8px;top:8px}
+
+
+
+/* --- Card action buttons (aligned, consistent) --- */
+.card .card-right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.card .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));min-width:44px;min-height:40px;font-weight:600;cursor:pointer}
+.card .btn svg, .card .btn img{width:18px;height:18px}
+
+/* --- Trending area: larger cards and pinned badge --- */
+.trending{padding:8px}
+.trending-scroll{display:flex;gap:12px;overflow-x:auto;padding:6px 2px}
+.trending-card{flex:0 0 220px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));border-radius:12px;padding:8px;border:1px solid rgba(255,255,255,0.03);display:flex;gap:8px;align-items:center}
+.trending-thumb img{width:84px;height:84px;object-fit:cover;border-radius:8px}
+.trending-body{flex:1;min-width:0}
+.trending-card .t-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trending-card .t-price{color:var(--neon-1);font-weight:800;margin-top:6px}
+.pinned-card::before{content:'📌';position:absolute;margin-left:-6px;margin-top:-6px;}
+
+/* --- Modal styles --- */
+#nb-modal{display:none;position:fixed;inset:0;align-items:center;justify-content:center;z-index:99999;background:rgba(0,0,0,0.45)}
+#nb-modal .nb-modal-body{max-width:900px;width:95%;background:linear-gradient(180deg, rgba(6,8,16,0.98), rgba(7,10,20,0.96));border-radius:12px;padding:18px;color:#fff;position:relative}
+.nb-modal-card{display:flex;gap:18px}
+.nb-modal-left{flex:0 0 40%}
+.modal-images img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin-bottom:6px}
+.nb-modal-right{flex:1}
+.modal-title{font-size:20px;margin:0 0 6px 0;color:var(--accent-2)}
+.modal-price{font-weight:800;color:var(--neon-1);margin-bottom:8px}
+.modal-desc{color:var(--muted);white-space:pre-wrap}
+.modal-actions{display:flex;gap:8px;margin-top:12px}
+.modal-actions .btn{min-width:110px;padding:10px 12px;border-radius:10px}
+
