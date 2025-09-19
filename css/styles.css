@@ -1,165 +1,190 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nepali Bazar — Home</title>
+/* NEPALI BAZAR - Game-like neon aesthetic CSS
+   Paste this entire file into css/styles.css
+*/
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+:root{
+  --bg-1: #0b0f1a;
+  --bg-2: #071027;
+  --neon-1: #00e6ff;
+  --neon-2: #9b59ff;
+  --glass: rgba(255,255,255,0.04);
+  --muted: #9aa3b2;
+  --maxwidth: 1200px;
+  --radius: 14px;
+  --accent: #00e6ff;
+  --accent-2: #9b59ff;
+}
 
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="css/styles.css">
+/* Base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(155,89,255,0.07), transparent),
+              radial-gradient(1000px 400px at 90% 90%, rgba(0,230,255,0.03), transparent),
+              linear-gradient(180deg,var(--bg-1),var(--bg-2));
+  color:#e6f0ff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  min-height:100%;
+}
 
-  <style>
-    /* Force white text for dark theme */
-    body, .card, .btn, .select, .muted, .title, .meta, .hero, .hero-sub, .sidebar, .site-footer {
-      color: #fff !important;
-    }
-    input, select, textarea {
-      background: #111;
-      color: #fff !important;
-      border: 1px solid #444;
-    }
-  </style>
+/* fancy animated star grid */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.06) 50%, transparent 51%),
+    radial-gradient(1px 1px at 60% 40%, rgba(255,255,255,0.04) 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.03) 50%, transparent 51%);
+  opacity:0.6;
+  pointer-events:none;
+  animation: twinkle 6s linear infinite;
+}
+@keyframes twinkle{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+  100%{transform:translateY(0)}
+}
 
-  <script src="js/config.js"></script>
-  <script src="js/product-data.js"></script>
-</head>
-<body class="dark-bg">
+/* layout helpers */
+.container{max-width:var(--maxwidth);margin:0 auto;padding:22px}
+.header-inner, .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
 
-  <!-- Header -->
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="index.html" class="brand">
-        <div class="logo">NB</div>
-        <div class="brand-text">
-          <div class="brand-title"><span class="site-name">NEPALI BAZAR</span></div>
-          <div class="brand-sub">Local Marketplace — Game Mode</div>
-        </div>
-      </a>
+/* Header */
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:40;
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  margin-bottom:8px;
+  background:linear-gradient(180deg, rgba(8,10,20,0.6), rgba(8,10,20,0.35));
+}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.logo{
+  width:52px;height:52px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--neon-2),var(--neon-1));
+  color:#03060a;font-weight:800;font-family:"Orbitron",sans-serif;font-size:18px;
+  box-shadow:0 8px 30px rgba(155,89,255,0.12), 0 6px 20px rgba(0,230,255,0.08);
+}
+.brand-title{font-weight:700;font-family:"Orbitron",sans-serif}
+.brand-sub{font-size:12px;color:var(--muted)}
 
-      <nav class="nav">
-        <input id="global-search" placeholder="Search items, e.g., bike, phone" class="search-input" />
-        <a href="products.html" class="nav-link">Products</a>
-        <a href="sell.html" class="nav-link cta">Sell</a>
-        <a href="login.html" id="login-link" class="nav-link">Login</a>
-        <span id="user-info" class="nav-link" style="display:none;">
-          <span id="username-display"></span> | <a href="#" id="logout-btn">Logout</a>
-        </span>
-      </nav>
-    </div>
-  </header>
+/* Nav */
+.nav{display:flex;align-items:center;gap:12px}
+.nav-link{color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:10px}
+.nav-link:hover{color:white;background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02))}
+.nav-link.cta{background:linear-gradient(90deg,var(--neon-1),var(--neon-2));color:#061024;font-weight:700;padding:10px 14px;border-radius:10px}
+.search-input{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:10px 12px;border-radius:12px;color:#e6f0ff;min-width:220px}
+.search-input::placeholder{color:rgba(230,240,255,0.45)}
 
-  <!-- Animated hero -->
-  <section class="hero">
-    <div class="hero-overlay"></div>
-    <div class="container hero-inner">
-      <div class="hero-left">
-        <h1 class="hero-title"><span class="accent site-name">NEPALI BAZAR</span><br>Buy • Sell • Connect — Locally</h1>
-        <p class="hero-sub">A neon-lit marketplace for students, workers & creators. Upload your item, add contact details and photos — buyers contact you directly.</p>
-        <div class="hero-cta">
-          <a class="btn btn-primary" href="products.html">Browse Items</a>
-          <a class="btn btn-ghost" href="sell.html">List an Item</a>
-        </div>
-      </div>
+/* Hero */
+.hero{padding:48px 0;position:relative;overflow:visible}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(120deg, rgba(155,89,255,0.06), rgba(0,230,255,0.03));pointer-events:none}
+.hero-inner{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center}
+.hero-title{font-family:"Orbitron",sans-serif;font-size:40px;line-height:1;color:white;margin:0}
+.hero-sub{color:var(--muted);margin:12px 0 18px;max-width:520px}
+.hero-cta .btn{margin-right:12px}
+.neon-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));border-radius:16px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(0,0,0,0.5)}
+.hero-card img{width:100%;height:240px;object-fit:cover;border-radius:10px}
+.hero-card .meta{margin-top:10px;color:var(--muted);font-size:13px}
 
-      <div class="hero-right">
-        <div class="hero-card neon-card">
-          <img src="assets/images/hero-1.jpg" alt="hero image" onerror="this.style.display='none'"/>
-          <div class="meta">Featured: Gaming Laptop — Rs. 85,000</div>
-        </div>
-      </div>
-    </div>
-  </section>
+/* Main grid */
+.main-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;padding-bottom:40px}
+.content{padding-right:8px}
+.sidebar{position:sticky;top:100px;align-self:start}
 
-  <!-- Main area: featured + grid -->
-  <main class="container main-grid">
-    <section class="content">
-      <div class="section-head">
-        <h2>Latest Listings</h2>
-        <div class="controls">
-          <select id="filter-category" class="select"></select>
-          <select id="filter-sort" class="select">
-            <option value="new">Newest</option>
-            <option value="price-asc">Price: Low → High</option>
-            <option value="price-desc">Price: High → Low</option>
-          </select>
-        </div>
-      </div>
+/* Cards grid */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);
+  box-shadow:0 6px 26px rgba(10,14,24,0.6);transition:transform .18s ease, box-shadow .18s ease;
+  display:flex;flex-direction:column;gap:10px;
+}
+.card:hover{transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,0.7)}
+.card .thumb{height:160px;border-radius:10px;overflow:hidden;background:#061024;display:grid;place-items:center}
+.card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.card .title{font-weight:700}
+.card .price{color:var(--neon-1);font-weight:800}
+.card .meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
 
-      <div id="home-grid" class="card-grid"></div>
-      <div id="load-more" class="load-more-wrap">
-        <button id="load-more-btn" class="btn">Load more</button>
-      </div>
-    </section>
+/* Sidebar ads */
+.ad-slot{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:8px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.03)}
+.ad-slot img{display:block;width:100%;height:auto;border-radius:8px}
+.sidebar-card{padding:12px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
 
-    <aside class="sidebar">
-      <div class="ad-slot"></div>
-      <div class="ad-slot small"></div>
+/* Buttons */
+.btn{display:inline-block;padding:10px 14px;border-radius:10px;background:transparent;color:#e6f0ff;border:1px solid rgba(255,255,255,0.04);font-weight:700;cursor:pointer;text-decoration:none}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:linear-gradient(90deg,var(--neon-1),var(--neon-2));color:#041026;border:none}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
 
-      <div class="sidebar-card">
-        <h3>Post quickly</h3>
-        <p class="muted">List your item in under a minute. Add photos & contact details so buyers can reach you directly.</p>
-        <a class="btn btn-primary" href="sell.html">Create Listing</a>
-      </div>
-    </aside>
-  </main>
+/* Section head */
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.controls{display:flex;gap:8px}
 
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div>© <span id="year"></span> <span class="site-name"></span>. Made with ❤️ in Nepal.</div>
-      <div class="muted">Contact: <a href="mailto:help@nepalibazar.test">help@nepalibazar.test</a></div>
-    </div>
-  </footer>
+/* selects and inputs - styled for dark theme */
+.select{background:rgba(20,20,20,0.95);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:10px;color:#fff}
+.input{background:rgba(20,20,20,0.95);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:10px;color:#fff;min-width:160px}
+textarea{background:rgba(20,20,20,0.95);border:1px solid rgba(255,255,255,0.03);color:#fff;padding:10px;border-radius:8px}
+.select option{background:rgba(20,20,20,0.95);color:#fff}
+.search-input::placeholder, .input::placeholder, textarea::placeholder{color:rgba(230,240,255,0.45)}
 
-  <!-- Scripts -->
-  <script src="js/app.js"></script>
-  <script>
-    // Year + site name
-    document.getElementById('year').textContent = new Date().getFullYear();
-    document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
+/* Product detail */
+.product-detail-wrap{padding:28px 0}
+.product-detail{display:grid;grid-template-columns:520px 1fr;gap:20px}
+.gallery{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+.gallery .main-img{width:100%;height:420px;object-fit:cover;display:block}
+.gallery .thumbs{display:flex;gap:8px;margin-top:8px}
+.gallery .thumbs img{width:86px;height:64px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent}
+.gallery .thumbs img.active{border-color:var(--neon-1)}
+.details{padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.details h1{font-family:"Orbitron",sans-serif}
+.details .price{font-size:22px;color:var(--neon-1);margin-top:6px}
 
-    // Logged-in state
-    const loggedUser = localStorage.getItem("nb_logged_in_user");
-    const loginLink = document.getElementById("login-link");
-    const userInfo = document.getElementById("user-info");
-    const usernameDisplay = document.getElementById("username-display");
-    const logoutBtn = document.getElementById("logout-btn");
+/* form & sell page */
+.sell-wrap{padding:28px 0}
+.sell-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid label{display:flex;flex-direction:column;gap:8px}
+.form-grid .input, .form-grid .select, .form-grid textarea{width:100%}
+.form-grid textarea{resize:vertical}
+.form-actions{grid-column:1 / -1;display:flex;gap:10px}
+.preview-area{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.preview-area img{width:120px;height:88px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
+.muted{color:var(--muted)}
 
-    if (loggedUser) {
-      loginLink.style.display = "none";
-      userInfo.style.display = "inline";
-      usernameDisplay.textContent = loggedUser;
-    } else {
-      loginLink.style.display = "inline";
-      userInfo.style.display = "none";
-    }
+/* small screens */
+@media (max-width:980px){
+  .hero-inner{grid-template-columns:1fr;gap:16px}
+  .main-grid{grid-template-columns:1fr;gap:12px}
+  .form-grid{grid-template-columns:1fr}
+  .product-detail{grid-template-columns:1fr}
+}
 
-    logoutBtn.addEventListener("click", function(e){
-      e.preventDefault();
-      localStorage.removeItem("nb_logged_in_user");
-      location.reload();
-    });
+/* utility */
+.load-more-wrap{text-align:center;margin-top:14px}
+.pagination{display:flex;gap:8px;justify-content:center;margin-top:18px}
+.small{font-size:13px}
 
-    // Load-more button
-    let homeLimit = 8;
-    const btn = document.getElementById("load-more-btn");
-    if(btn){
-      btn.addEventListener("click", ()=>{
-        homeLimit += 8;
-        if(window.renderHomeGrid){
-          window.renderHomeGrid(homeLimit);
-        }
-      });
-    }
+/* Ensure ad images fit */
+.ad-slot img, .hero-card img { width:100%; height:auto; object-fit:cover; }
 
-    // Filter dropdowns → refresh grid
-    const catSel = document.getElementById("filter-category");
-    const sortSel = document.getElementById("filter-sort");
-    if(catSel) catSel.addEventListener("change", ()=>{ if(window.renderProductsPage) window.renderProductsPage(); });
-    if(sortSel) sortSel.addEventListener("change", ()=>{ if(window.renderProductsPage) window.renderProductsPage(); });
-  </script>
-</body>
-</html>
+/* Modal for view/contact — dark themed */
+.nb-modal{ position:fixed; left:0; top:0; right:0; bottom:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:9999;}
+.nb-modal .nb-modal-content{ background: #071027; color:#fff; padding:18px; border-radius:12px; max-width:700px; width:92%; position:relative; border:1px solid rgba(255,255,255,0.06); }
+.nb-modal-close{ position:absolute; right:10px; top:8px; border:0; background:transparent; color:#fff; font-size:20px; padding:6px 10px; border-radius:6px; cursor:pointer; }
+
+/* minor utility: ensure text is readable on dark bg */
+a, p, li, label, input, select, textarea, .muted, .title, .meta, .brand-sub { color: #e6f0ff; }
+
+/* hover highlight for select - neon glow */
+.select:hover, .input:hover, .search-input:hover { box-shadow: 0 6px 20px rgba(0,230,255,0.06); }
+
+/* small tweak for delete btn */
+.btn-danger { background: rgba(255,40,40,0.12); border:1px solid rgba(255,40,40,0.18); color:#ffb3b3; }
+
