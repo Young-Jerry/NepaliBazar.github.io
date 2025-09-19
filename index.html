@@ -39,23 +39,32 @@
     </div>
   </header>
 
-  <!-- Hero section with pinned ad -->
+  <!-- Hero section -->
   <section class="hero">
     <div class="hero-overlay"></div>
     <div class="container hero-inner">
+      <!-- Left side: text -->
       <div class="hero-left">
-        <h1>Welcome to <span class="site-name">NEPALI BAZAR</span></h1>
-        <p class="tagline">Buy, sell, and discover amazing deals locally.</p>
-        <input id="global-search-top" placeholder="Search anything..." class="search-input" />
+        <h1 class="hero-title"><span class="accent site-name">NEPALI BAZAR</span><br>Buy • Sell • Connect — Locally</h1>
+        <p class="hero-sub">A neon-lit marketplace for students, workers & creators. Upload your item, add contact details and photos — buyers contact you directly.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="products.html">Browse Items</a>
+          <a class="btn btn-ghost" href="sell.html">List an Item</a>
+        </div>
       </div>
-      <div class="hero-right">
-        <!-- Pinned product OR fallback RTX ad will be injected by app.js -->
+
+      <!-- Right side: pinned ad or fallback -->
+      <div class="hero-right" id="hero-ad-slot">
+        <!-- Default fallback RTX ad -->
+        <div class="hero-card neon-card" id="hero-fallback">
+          <img src="assets/images/hero-1.jpg" alt="Featured ad" onerror="this.style.display='none'"/>
+          <div class="meta">Featured: Gaming Laptop — Rs. 85,000</div>
+        </div>
       </div>
     </div>
   </section>
 
-
-  <!-- Main area: featured + grid -->
+  <!-- Main area -->
   <main class="container main-grid">
     <section class="content">
       <div class="section-head">
@@ -72,7 +81,6 @@
     </section>
 
     <aside class="sidebar">
-      <!-- ads will be injected by app.js -->
       <div class="ad-slot"></div>
       <div class="ad-slot small"></div>
 
