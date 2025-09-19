@@ -10,13 +10,10 @@
 
   <!-- Main CSS -->
   <link rel="stylesheet" href="css/styles.css">
-
   <script src="js/config.js"></script>
   <script src="js/product-data.js"></script>
 </head>
 <body class="dark-bg">
-
-  <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="brand">
@@ -35,7 +32,6 @@
     </div>
   </header>
 
-  <!-- Main -->
   <main class="container auth-wrap">
     <div class="auth-card">
       <h2>Login</h2>
@@ -51,10 +47,12 @@
         </div>
         <p id="login-msg" class="muted small"></p>
       </form>
+      <div style="margin-top:12px" class="muted small">
+        Demo accounts: <strong>sohaum / sohaum</strong> (admin), <strong>sneha / sneha</strong> (normal user).
+      </div>
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>© <span id="year"></span> <span class="site-name"></span></div>
@@ -62,15 +60,18 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
   <script src="js/app.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function(){
-      // Footer info
       document.getElementById('year').textContent = new Date().getFullYear();
       document.querySelectorAll('.site-name').forEach(el => el.textContent = window.SITE_NAME || 'NEPALI BAZAR');
 
-      // Login
+      // demo credentials
+      const accounts = {
+        sohaum: 'sohaum', // admin
+        sneha: 'sneha'    // regular user
+      };
+
       const loginForm = document.getElementById('login-form');
       const loginMsg = document.getElementById('login-msg');
 
@@ -78,12 +79,10 @@
         e.preventDefault();
         const username = this.username.value.trim();
         const password = this.password.value.trim();
-
-        // Only allow sohaum / sohaum
-        if(username === "sohaum" && password === "sohaum"){
-          localStorage.setItem("nb_logged_in_user", username);
-          loginMsg.textContent = "✅ Login successful! Redirecting...";
-          setTimeout(()=>{ window.location.href = "index.html"; }, 800);
+        if(accounts[username] && accounts[username] === password){
+          localStorage.setItem('nb_logged_in_user', username);
+          loginMsg.textContent = "✅ Login successful! Redirecting to your profile...";
+          setTimeout(()=>{ window.location.href = "profile.html"; }, 600);
         } else {
           loginMsg.textContent = "❌ Invalid username or password!";
         }
